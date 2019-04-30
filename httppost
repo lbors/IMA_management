@@ -1,0 +1,11 @@
+curl --header "Content-Type: application/text" \
+  --request POST \
+  --data '/home/debeltrami/ima/IMAv2/yamlFiles/slice1.yaml' \
+  http://localhost:5000/startMonitoring
+
+
+
+curl --header "Content-Type: application/text" \
+    --request POST \
+    --data '  /IMAv2/yamlFiles/SRO-IMA(Slice1).yaml' \
+    http://172.17.0.3:5000/startMonitoring

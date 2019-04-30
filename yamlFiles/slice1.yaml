@@ -1,0 +1,165 @@
+---
+slice:
+   id: slice1
+   name: TouristicCDN_sliced
+   
+   vim:
+      - slice-vim:
+           name: slice_part_1
+           type: kubernetes
+
+           dc-slice-controller:
+              dc-slice-provider: definded
+              ip: 3xx.xxx.xxx.1
+              port: 6000
+
+           host-count-in-dc:
+              group-ip: defined
+
+           monitoring-parameters:
+              tool: prometheus
+              measurements-db-ip: 192.168.2.81
+              measurements-db-port: 9090
+              granularity-secs: 10
+              metrics:
+                 - metric:
+                      name: CPU_UTILIZATION_PHYSICAL
+                 - metric:
+                      name: MEMORY_UTILIZATION_PHYSICAL
+                 - metric:
+                      name: TOTAL_BYTES_READS_PHYSICAL
+                 - metric:
+                      name: TOTAL_BYTES_WRITES_PHYSICAL
+                 - metric:
+                      name: TOTAL_BYTES_RX_PHYSICAL
+                 - metric:
+                      name: TOTAL_BYTES_TX_PHYSICAL
+                 - metric:
+                      name: TOTAL_PACKETS_RX_PHYSICAL
+                 - metric:
+                      name: TOTAL_PACKETS_TX_PHYSICAL
+                 - metric:
+                      name: CPU_UTILIZATION_CONTAINER
+                 - metric:
+                      name: MEMORY_UTILIZATION_CONTAINER
+                 - metric:
+                      name: TOTAL_BYTES_READS_CONTAINER
+                 - metric:
+                      name: TOTAL_BYTES_WRITES_CONTAINER
+                 - metric:
+                      name: TOTAL_BYTES_RX_CONTAINER
+                 - metric:
+                      name: TOTAL_BYTES_TX_CONTAINER
+                 - metric:
+                      name: TOTAL_PACKETS_RX_CONTAINER
+                 - metric:
+                      name: TOTAL_PACKETS_TX_CONTAINER
+      - slice-vim:
+           name: slice_part_2
+           type: kubernetes
+
+           dc-slice-controller:
+              dc-slice-provider: IBM
+              ip: 2xx.xxx.xxx.1
+              port: 5000
+
+           host-count-in-dc:
+              group-ip: definded
+
+           VM-per-host:
+              ratio: 0.20  # distribute
+              host-count-in-dc:
+                 - id-host:
+                      name: host1
+                      ip-group: undefined
+                 - id-host:
+                      name: host2
+                      ip-group: undefined
+                 - id-host:
+                      name: host3
+                      ip-group: undefined
+                 - id-host:
+                      name: host4
+                      ip-group: undefined
+                 - id-host:
+                      name: host5
+                      ip-group: undefined
+
+           monitoring-parameters:
+               tool: prometheus
+               measurements-db-ip: 192.168.2.80
+               measurements-db-port: 9092
+               granularity-secs: 10
+               metrics:
+                  - metric:
+                       name: CPU_UTILIZATION_PHYSICAL
+                  - metric:
+                       name: MEMORY_UTILIZATION_PHYSICAL
+                  - metric:
+                       name: TOTAL_BYTES_READS_PHYSICAL
+                  - metric:
+                       name: TOTAL_BYTES_WRITES_PHYSICAL
+                  - metric:
+                       name: TOTAL_BYTES_RX_PHYSICAL
+                  - metric:
+                       name: TOTAL_BYTES_TX_PHYSICAL
+                  - metric:
+                       name: TOTAL_PACKETS_RX_PHYSICAL
+                  - metric:
+                       name: TOTAL_PACKETS_TX_PHYSICAL
+                  - metric:
+                       name: CPU_UTILIZATION_CONTAINER
+                  - metric:
+                       name: MEMORY_UTILIZATION_CONTAINER
+                  - metric:
+                       name: TOTAL_BYTES_READS_CONTAINER
+                  - metric:
+                       name: TOTAL_BYTES_WRITES_CONTAINER
+                  - metric:
+                       name: TOTAL_BYTES_RX_CONTAINER
+                  - metric:
+                       name: TOTAL_BYTES_TX_CONTAINER
+                  - metric:
+                       name: TOTAL_PACKETS_RX_CONTAINER
+                  - metric:
+                       name: TOTAL_PACKETS_TX_CONTAINER
+   wim:
+      - slice-wim:
+           name: definded
+           wan-slice-controller:
+              wan-slice-provider: telefonica
+              ip: 195.xxx.xxx.1
+              port: xxx
+
+           links:
+              - dc-part1:
+                   name: dc-slice1
+                   dc-slice-point-of-presence:
+                      pop-name: Amazon-defined
+                      ip: 19x.xxx.xxx.xx1
+                      router-type: Wired Router-cisco
+                      reservation-protocol: BGP
+
+              - dc-part2:
+                   name: dc-slice2
+                   dc-slice-point-of-presence:
+                      pop-name: IBM-defined
+                      ip: 19x.xxx.xxx.xx1
+                      router-type: Wired Router-cisco
+                      reservation-protocol: BGP
+
+           type: interaction
+           constraints:
+              bandwidth: 1 GB
+
+           monitoring-parameters:
+              tool: defined
+              measurements_db_ip: undefined
+              measurements_db_port: undefined
+              metrics:
+                 - metric:
+                      name: BANDWIDTH_UTILIZATION
+                      granularity-secs: 10
+
+
+      - name: defined
