@@ -85,6 +85,7 @@ def start_monitoring():
 
     start_slice_aggregator(slice_id)
     start_slice_adapter(json_content)
+    # /home/williamgdo/Documentos/git/IMA_management/yamlFiles/slice1.yaml
 
 
 @app.route('/stopMonitoring/<stopMonitoring>')
