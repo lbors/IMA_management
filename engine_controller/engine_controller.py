@@ -8,7 +8,8 @@ import time
 
 app = Flask(__name__)
 slice_dict = {"slice":[]}
-port = 2000
+port = 8080
+master_ip = '192.168.1.151'
 slice_provider_ip = '200.136.191.58'
 
 def start_slice_aggregator(slice_id):
@@ -68,7 +69,7 @@ def start_slice_adapter(json_content):
 
 @app.route('/')
 def default_options():
-    return 'Welcome to Monitoring Engine Controller'
+    return 'Welcome to Resource and VM Management (IMA)!'
 
 @app.route('/startMonitoring', methods = ['POST'])
 def start_monitoring():
@@ -87,6 +88,12 @@ def start_monitoring():
     start_slice_adapter(json_content)
     # /home/williamgdo/Documentos/git/IMA_management/yamlFiles/slice1.yaml
 
+@app.route('/listPods', methods = ['GET'])
+def list_pods():
+    
+    r = requests.get("http://" + master_ip + ":" + str(port) + "/api/v1/namespaces/espaco-testes/pods/")
+    data = r.json()
+    print(json.dumps(data,separators=(',',':')))
 
 @app.route('/stopMonitoring/<stopMonitoring>')
 def stop_monitoring():
