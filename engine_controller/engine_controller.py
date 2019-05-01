@@ -90,16 +90,66 @@ def start_monitoring():
 
 @app.route('/listPods', methods = ['GET'])
 def list_pods():
-    
-    r = requests.get("http://" + master_ip + ":" + str(port) + "/api/v1/namespaces/espaco-testes/pods/")
-    data = r.json()
-    print(json.dumps(data,separators=(',',':')))
+    resp = requests.get("http://" + master_ip + ":" + str(port) + "/api/v1/namespaces/espaco-testes/pods/")
+    #resp = requests.get("http://192.168.1.151:8080/api/v1/namespaces/espaco-testes/pods/")
+    parsed = json.loads(resp.content)
+    print(json.dumps(parsed, indent=2))
+    return 'OK'
+
+@app.route('/getPod', methods = ['POST'])
+def get_pod():
+    file_name = request.data.decode('utf-8')
+    print(file_name)
+
+    # ler arquivo de parametro
+    file = open(file_name, "r")
+    yaml_content = file.read()
+    file.close()
+    data = yaml.load(yaml_content)
+    #return (data['podInfo']['name'])
+    resp = requests.get("http://" + master_ip + ":" + str(port) + "/api/v1/namespaces/espaco-testes/pods/" + data['podInfo']['name'])
+    #resp = requests.get("http://192.168.1.151:8080/api/v1/namespaces/espaco-testes/pods/")
+    parsed = json.loads(resp.content)
+    print(json.dumps(parsed, indent=2))
+    return 'OK'
+
+@app.route('/createPod', methods = ['POST'])
+def create_pod():
+    file_name = request.data.decode('utf-8')
+    print(file_name)
+
+    # ler arquivo de parametro
+    file = open(file_name, "r")
+    yaml_content = file.read()
+    file.close()
+    data = yaml.load(yaml_content)
+    #return (data['podInfo']['name'])
+
+    # curl -s http://{ip}:{porta}/api/v1/namespaces/{namespace}/pods \
+    # -XPOST -H 'Content-Type: application/json' \
+    # -d@{arquivo}.json 
+
+    json_content = json.dumps(yaml.safe_load(data['podInfo']['yaml_creation']))
+    json_content = json.loads(json_content)
+
+    return json_content
+    #resp = requests.post("http://" + master_ip + ":" + str(port) + "/api/v1/namespaces/" + data['podInfo']['namespace'] + "/pods/" + 
+     #                   "-XPOST -H 'Content-Type: application/json' -d@{arquivo}.json ")
+    #resp = requests.get("http://192.168.1.151:8080/api/v1/namespaces/espaco-testes/pods/")
+    #parsed = json.loads(resp.content)
+    #print(json.dumps(parsed, indent=2))
+    #return 'OK'
 
 @app.route('/stopMonitoring/<stopMonitoring>')
 def stop_monitoring():
-    return 'Stoping the monitoring infrastructure'
+    return 'Stopping the monitoring infrastructure'
 
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')
 
+#TODO melhorar leitura
+#- listPODs precisa ser post e enviar o namespace
+#- deve poder criar yamls em sequencia
+
+# todo retorno printa em baixo do curl
