@@ -124,21 +124,22 @@ def create_pod():
     file.close()
     data = yaml.load(yaml_content)
     #return (data['podInfo']['name'])
-
+    
     # curl -s http://{ip}:{porta}/api/v1/namespaces/{namespace}/pods \
     # -XPOST -H 'Content-Type: application/json' \
     # -d@{arquivo}.json 
+    creationJson = data['podInfo']['yaml_creation']
+    #json_content = json.dumps(yaml.safe_load(creationJson))
+    #json_content = json.loads(json_content)
 
-    json_content = json.dumps(yaml.safe_load(data['podInfo']['yaml_creation']))
-    json_content = json.loads(json_content)
+    #print(json.dumps(json_content, indent=2))
+    #print(json.dumps(creationJson, indent=2))
 
-    return json_content
-    #resp = requests.post("http://" + master_ip + ":" + str(port) + "/api/v1/namespaces/" + data['podInfo']['namespace'] + "/pods/" + 
-     #                   "-XPOST -H 'Content-Type: application/json' -d@{arquivo}.json ")
-    #resp = requests.get("http://192.168.1.151:8080/api/v1/namespaces/espaco-testes/pods/")
+    requests.post("http://" + master_ip + ":" + str(port) + "/api/v1/namespaces/" + data['podInfo']['namespace'] + "/pods/" + 
+                        "-XPOST -H 'Content-Type: application/json' -d " + str(creationJson))
     #parsed = json.loads(resp.content)
     #print(json.dumps(parsed, indent=2))
-    #return 'OK'
+    return 'OK'
 
 @app.route('/stopMonitoring/<stopMonitoring>')
 def stop_monitoring():
@@ -151,5 +152,6 @@ if __name__ == '__main__':
 #TODO melhorar leitura
 #- listPODs precisa ser post e enviar o namespace
 #- deve poder criar yamls em sequencia
+#- por causa da setinha n funfa
 
 # todo retorno printa em baixo do curl
