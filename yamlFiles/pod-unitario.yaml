@@ -1,11 +1,12 @@
 ---
 podInfo:
-  name: memory-demo 
+  name: nginx 
   namespace: espaco-testes
   yaml_creation: 
     apiVersion: v1
     kind: Pod
     metadata:
+      namespace: espaco-testes
       name: nginx
       labels:
         name: nginx
@@ -26,4 +27,4 @@ podInfo:
             secretName: "nginx.conf"
         - name: "ssl-certs"
           secret:
-    secretName: "nginx-ssl-certs"
+            secretName: "nginx-ssl-certs"
