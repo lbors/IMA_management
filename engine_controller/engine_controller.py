@@ -89,12 +89,27 @@ def start_monitoring():
     # /home/williamgdo/Documentos/git/IMA_management/yamlFiles/slice1.yaml
 
 @app.route('/listPods', methods = ['GET'])
-def list_pods():
-    resp = requests.get("http://" + master_ip + ":" + str(port) + "/api/v1/namespaces/espaco-testes/pods/")
+def list_pods_default():
+    resp = requests.get("http://" + master_ip + ":" + str(port) + "/api/v1/namespaces/default/pods/")
     #resp = requests.get("http://192.168.1.151:8080/api/v1/namespaces/espaco-testes/pods/")
     parsed = json.loads(resp.content)
     print(json.dumps(parsed, indent=2))
-    return 'OK'
+    return str(resp.status_code)
+
+@app.route('/listPods', methods = ['POST'])
+def list_pods():
+    # ler arquivo de parametro
+    file_name = request.data.decode('utf-8')
+    file = open(file_name, "r")
+    yaml_content = file.read()
+    file.close()
+    data = yaml.safe_load(yaml_content) # parsear pra yaml
+
+    resp = requests.get("http://" + master_ip + ":" + str(port) + "/api/v1/namespaces/" + data['podInfo']['namespace'] + "/pods/")
+    parsed = json.loads(resp.content)
+    print(json.dumps(parsed, indent=2))
+
+    return str(resp.status_code)
 
 @app.route('/getPod', methods = ['POST'])
 def get_pod():
@@ -106,12 +121,12 @@ def get_pod():
     yaml_content = file.read()
     file.close()
     data = yaml.load(yaml_content)
-    #return (data['podInfo']['name'])
-    resp = requests.get("http://" + master_ip + ":" + str(port) + "/api/v1/namespaces/espaco-testes/pods/" + data['podInfo']['name'])
+
+    resp = requests.post("http://" + master_ip + ":" + str(port) + "/api/v1/namespaces/espaco-testes/pods/" + data['podInfo']['name'])
     #resp = requests.get("http://192.168.1.151:8080/api/v1/namespaces/espaco-testes/pods/")
     parsed = json.loads(resp.content)
     print(json.dumps(parsed, indent=2))
-    return 'OK'
+    return str(resp.status_code)
 
 @app.route('/createPod', methods = ['POST'])
 def create_pod():
@@ -122,24 +137,21 @@ def create_pod():
     file = open(file_name, "r")
     yaml_content = file.read()
     file.close()
+
+    # carrega o YAML, "parseia" pra Json 
     data = yaml.load(yaml_content)
-    #return (data['podInfo']['name'])
+    json_content = json.dumps(data)
+    json_content = json.loads(json_content)
     
     # curl -s http://{ip}:{porta}/api/v1/namespaces/{namespace}/pods \
     # -XPOST -H 'Content-Type: application/json' \
     # -d@{arquivo}.json 
-    creationJson = data['podInfo']['yaml_creation']
-    #json_content = json.dumps(yaml.safe_load(creationJson))
-    #json_content = json.loads(json_content)
 
-    #print(json.dumps(json_content, indent=2))
-    #print(json.dumps(creationJson, indent=2))
+    # curl -s http://192.168.1.151:8080/api/v1/namespaces/espaco-testes/pods -XPOST -H 'Content-Type: application/json' -d "{"apiVersion": "v1", "kind": "Pod", "metadata": {"name": "nginx", "labels": {"name": "nginx"}}, "spec": {"containers": [{"name": "nginx", "image": "nginx", "ports": [{"containerPort": 443}], "volumeMounts": [{"mountPath": "/etc/nginx/", "name": "nginx-conf"}, {"mountPath": "/usr/local/etc/nginx/ssl", "name": "ssl-certs"}]}], "volumes": [{"name": "nginx-conf", "secret": {"secretName": "nginx.conf"}}, {"name": "ssl-certs", "secret": null}]}, "secretName": "nginx-ssl-certs"}"
 
-    requests.post("http://" + master_ip + ":" + str(port) + "/api/v1/namespaces/" + data['podInfo']['namespace'] + "/pods/" + 
-                        "-XPOST -H 'Content-Type: application/json' -d " + str(creationJson))
-    #parsed = json.loads(resp.content)
-    #print(json.dumps(parsed, indent=2))
-    return 'OK'
+    resp = requests.post("http://" + master_ip + ":" + str(port) + "/api/v1/namespaces/" + data['podInfo']['namespace'] 
+                            + "/pods/", data = json.dumps(json_content['podInfo']['yaml_creation']))
+    return str(resp.status_code)
 
 @app.route('/stopMonitoring/<stopMonitoring>')
 def stop_monitoring():
