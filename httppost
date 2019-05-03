@@ -21,4 +21,5 @@ curl --header "Content-Type: */yaml" \
     http://localhost:5000/getPod
 
 
+ curl --header "Content-Type: */yaml" --request POST --data '/home/williamgdo/Documentos/git/IMA_management/yamlFiles/pod-unitario.yaml' http://localhost:5000/createPod
 

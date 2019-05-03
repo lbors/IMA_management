@@ -1,8 +1,8 @@
 ---
 podInfo:
-  name: nginx 
+  name: example-service 
   namespace: espaco-testes
-  yaml_creation: 
+  pod_creation: 
     apiVersion: v1
     kind: Pod
     metadata:
@@ -28,3 +28,17 @@ podInfo:
         - name: "ssl-certs"
           secret:
             secretName: "nginx-ssl-certs"
+  service_creation:
+    apiVersion: v1
+    kind: Service
+    metadata:
+      name: example-service
+      labels:
+        app: example-service
+    spec:
+      ports:
+      - port: 80
+        targetPort: 4000
+      type: NodePort
+      selector:
+    app: example-pod
