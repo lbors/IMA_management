@@ -1,56 +1,81 @@
 ---
 podInfo:
-  - name: memory-demo 
-    namespace: espaco-testes
-    creation: 
-      apiVersion: v1
-      kind: Pod
-      metadata:
-        name: nginx
-        labels:
+    pod_creation: 
+      pod: 
+        apiVersion: v1
+        kind: Pod
+        metadata:
+          namespace: espaco-testes
           name: nginx
-      spec:
-        containers:
-        - name: nginx
-          image: nginx
-          ports:
-            - containerPort: 443
-          volumeMounts:
-            - mountPath: "/etc/nginx/"
-              name: "nginx-conf"
-            - mountPath: "/usr/local/etc/nginx/ssl"
-              name: "ssl-certs"
-        volumes:
-          - name: "nginx-conf"
-            secret:
-              secretName: "nginx.conf"
-          - name: "ssl-certs"
-            secret:
-             secretName: "nginx-ssl-certs"
-  - name: memory-demo 
-    namespace: espaco-testes
-    creation: 
-      apiVersion: v1
-      kind: Pod
-      metadata:
-        name: nginx
-        labels:
-          name: nginx
-      spec:
-        containers:
-        - name: nginx
-          image: nginx
-          ports:
-            - containerPort: 443
-          volumeMounts:
-            - mountPath: "/etc/nginx/"
-              name: "nginx-conf"
-            - mountPath: "/usr/local/etc/nginx/ssl"
-              name: "ssl-certs"
-        volumes:
-          - name: "nginx-conf"
-            secret:
-              secretName: "nginx.conf"
-          - name: "ssl-certs"
-            secret:
-      secretName: "nginx-ssl-certs"
+          labels:
+            name: nginx
+        spec:
+          containers:
+          - name: nginx
+            image: nginx
+            ports:
+              - containerPort: 443
+            volumeMounts:
+              - mountPath: "/etc/nginx/"
+                name: "nginx-conf"
+              - mountPath: "/usr/local/etc/nginx/ssl"
+                name: "ssl-certs"
+          volumes:
+            - name: "nginx-conf"
+              secret:
+                secretName: "nginx.conf"
+            - name: "ssl-certs"
+              secret:
+                secretName: "nginx-ssl-certs"
+      pod: 
+        apiVersion: v1
+        kind: Pod
+        metadata:
+          namespace: espaco-testes
+          name: enginex
+          labels:
+            name: enginex
+        spec:
+          containers:
+          - name: enginex
+            image: enginex
+            ports:
+              - containerPort: 444
+            volumeMounts:
+              - mountPath: "/etc/enginex/"
+                name: "enginex-conf"
+              - mountPath: "/usr/local/etc/enginex/ssl"
+                name: "ssl-certs"
+          volumes:
+            - name: "enginex-conf"
+              secret:
+                secretName: "enginex.conf"
+            - name: "ssl-certs"
+              secret:
+                secretName: "enginex-ssl-certs"
+      pod: 
+        apiVersion: v1
+        kind: Pod
+        metadata:
+          namespace: default
+          name: memory-demo
+          labels:
+            name: memory-demo
+        spec:
+          containers:
+          - name: memory-demo
+            image: mbw
+            ports:
+              - containerPort: 445
+            volumeMounts:
+              - mountPath: "/etc/memory-demo/"
+                name: "memory-demo-conf"
+              - mountPath: "/usr/local/etc/memory-demo/ssl"
+                name: "ssl-certs"
+          volumes:
+            - name: "memory-demo-conf"
+              secret:
+                secretName: "memory-demo.conf"
+            - name: "ssl-certs"
+              secret:
+                secretName: "memory-demo-ssl-certs"

@@ -73,13 +73,21 @@ def create_pod():
     # curl -s http://{ip}:{porta}/api/v1/namespaces/{namespace}/pods \
     # -XPOST -H 'Content-Type: application/json' \
     # -d@{arquivo}.json 
+    
+    # for dohicky_id in dohicky['dohicky']:
+    # stuff = dohicky['dohicky'][dohicky_id]['Stuff']
+
+    # for pod_id in json_content['podInfo']['pod_creation']:
+    #     resp = requests.post("http://" + master_ip + ":" + str(port) + "/api/v1/namespaces/" + data['podInfo']['pod_creation'][pod_id]['metadata']['namespace'] 
+    #                         + "/pods/", data = json.dumps(json_content['podInfo']['pod_creation'][pod_id]['metadata']['name']))
+    #     print(str(resp.status_code) + "\n")
 
     resp = requests.post("http://" + master_ip + ":" + str(port) + "/api/v1/namespaces/" + data['podInfo']['namespace'] 
                             + "/pods/", data = json.dumps(json_content['podInfo']['pod_creation']))
     return str(resp.status_code)
 
 
-@app.route('/deletePod', methods = ['DELETE']) 
+@app.route('/deletePod', methods = ['POST']) 
 def delete_pod():
     file_name = request.data.decode('utf-8')
     print(file_name)
@@ -155,7 +163,7 @@ def get_service():
     return str(resp.status_code)
 
 
-@app.route('/deleteService', methods = ['DELETE']) 
+@app.route('/deleteService', methods = ['POST']) 
 def delete_service():
     file_name = request.data.decode('utf-8')
     print(file_name)
@@ -185,4 +193,5 @@ if __name__ == '__main__':
 
 #TODO melhorar leitura
 #- deve poder criar yamls em sequencia
+#   - remover namespace do create, usar namespace interno
 #- deixar bonito???????
