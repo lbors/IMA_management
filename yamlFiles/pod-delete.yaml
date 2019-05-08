@@ -1,0 +1,12 @@
+---
+podInfo:
+    pod_creation: 
+      - pod: 
+          namespace: espaco-testes
+          name: nginx
+      - pod: 
+          namespace: espaco-testes
+          name: enginex
+      - pod: 
+          namespace: default
+          name: memory-demo
