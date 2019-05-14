@@ -7,11 +7,17 @@ import json
 
 app = Flask(__name__)
 port = 8080
-master_ip = '192.168.1.151'
+master_ip = '1.1.1.1'
+
+@app.route('/setIP')
+def set_IP():
+    global master_ip
+    data = request.data.decode('utf-8')
+    master_ip = data
 
 @app.route('/')
 def default_options():
-    return 'Welcome to Resource and VM Management (IMA)!'
+    return 'Welcome to the adapter X of Resource and VM Management'
 
 # sem argumentos, o metodo lista os pods do namespace DEFAULT
 @app.route('/listPods', methods = ['GET']) 
@@ -189,5 +195,6 @@ if __name__ == '__main__':
 
 
 
-#TODO melhorar leitura
+#TODO 
+#- melhorar leitura
 #- deixar bonito???????

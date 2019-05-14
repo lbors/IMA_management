@@ -1,7 +1,7 @@
 ---
 namespace: espaco-testes
 name: nginx
-pod_info: 
+pod_info:
   - pod: 
     apiVersion: v1
     kind: Pod
