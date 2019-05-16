@@ -21,20 +21,20 @@ def start_slice_adapter(json_content):
         slice_name = i['name']
         slice_user = i['user']
         agent_name = slice_name + '_' + slice_user + '_agent'
-        print (str(slice_name))
-        for j in i['vdus']: #???????????
-            print( str(j['name']) )
+        # print ('Nome da slice:' + str(slice_name))
 
-        #     if str(j['type']) == "master":
-        #         temp_ip = str(j['ip-address'])
-        # client = docker.from_env()
-        # client.containers.run("agentIMA", detach=True, name=agent_name, ports={'1010/tcp': ('localhost', port)})
+        for j in i['vdus']: #???????????
+            if str(j['dc-vdu']['type']) == "master":
+                temp_ip = str(j['dc-vdu']['ip-address'])
+
+        client = docker.from_env()
+        client.containers.run("agentima:latest", detach=True, name=agent_name, ports={'1010/tcp': ('localhost', port)})
 
         # requests.post("http://0.0.0.0:" + str(port) + "/setIP", data = temp_ip)
-        # print("The Adapter ", agent_name, " has started")
-        # port = port + 1 
+        print("The Adapter", agent_name, "has started")
+        port = port + 1 
 
-@app.route('/')
+@app.route('/')address
 def default_options():
     return 'Welcome to Resource and VM Management of IMA!'
 
@@ -64,6 +64,7 @@ def start_monitoring():
 
     # start_slice_aggregator(slice_id)
     start_slice_adapter(json_content)
+    return 'OK'
 
 @app.route('/stopManagementAdapter')
 def stop_monitoring():
@@ -75,7 +76,5 @@ if __name__ == '__main__':
 
 
 
-
 #possiveis erros:
-#- for: for: sdasdasd 
-#- client.containers.run("agentIMA",...
+#- maquina ta subindo com ip que nao é 0.0.0.0
