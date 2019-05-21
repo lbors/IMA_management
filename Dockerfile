@@ -21,6 +21,6 @@ RUN \
     apt -y install iputils-ping && \
     cd IMA_management/ && \
     git checkout master && \
-		git pull
+    git pull
 
 ENTRYPOINT python3.6 IMA_management/adapter.py >> adapter.log

@@ -9,7 +9,7 @@ app = Flask(__name__)
 port = 8080
 master_ip = '1.1.1.1'
 
-@app.route('/setIP')
+@app.route('/setIPandPort', methods = ['POST'])
 def set_IP():
     global master_ip
     data = request.data.decode('utf-8')
@@ -191,7 +191,7 @@ def delete_service():
 
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0')
+    app.run(debug=True, host='0.0.0.0', port='1010')
 
 
 

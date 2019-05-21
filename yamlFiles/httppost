@@ -27,3 +27,4 @@ curl --header "Content-Type: */yaml" \
   -XPOST -H 'Content-Type: application/json' \
   -d @  
 
+curl --header "Content-Type: */yaml" --request POST --data 'yamlFiles/cluster.yaml' http://0.0.0.0:5001/startManagementAdapter

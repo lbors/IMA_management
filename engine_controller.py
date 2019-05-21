@@ -4,17 +4,17 @@ import yaml
 import requests
 import docker
 import json
+import socket
+import time
 from subprocess import call
 
 app = Flask(__name__)
 slice_dict = {"slice":[]}
-port_server = 8080
-port = 5001
-master_ip = '192.168.1.151'
+# port_server = 8080
+# master_ip = '192.168.1.151'
 
 def start_slice_adapter(json_content):
     global slice_dict
-    global port
     
     #Start container for the IMA Agents/Adapters
     for i in json_content['dc-slice-part']:
@@ -23,18 +23,25 @@ def start_slice_adapter(json_content):
         agent_name = slice_name + '_' + slice_user + '_agent'
         # print ('Nome da slice:' + str(slice_name))
 
-        for j in i['vdus']: #???????????
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.bind(('localhost', 0))
+        port = s.getsockname()[1]
+        s.close()
+
+        for j in i['vdus']: 
             if str(j['dc-vdu']['type']) == "master":
-                temp_ip = str(j['dc-vdu']['ip-address'])
+                temp_ip = str(j['dc-vdu']['ip-address']) # identifica o mestre e salva o ip nessa string
 
         client = docker.from_env()
-        client.containers.run("agentima:latest", detach=True, name=agent_name, ports={'1010/tcp': ('localhost', port)})
+        client.containers.run("agentwill:latest", detach=True, name=agent_name, ports={'1010/tcp': ('localhost', port)})
+        print("http://0.0.0.0:" + str(port) + "/setIPandPort")
+        time.sleep(3)
 
-        # requests.post("http://0.0.0.0:" + str(port) + "/setIP", data = temp_ip)
+        requests.post("http://0.0.0.0:" + str(port) + "/setIPandPort", data = temp_ip)
+        # requests.post("http://0.0.0.0:" + "5000" + "/setIPandPort", data = temp_ip)
         print("The Adapter", agent_name, "has started")
-        port = port + 1 
 
-@app.route('/')address
+@app.route('/')
 def default_options():
     return 'Welcome to Resource and VM Management of IMA!'
 
@@ -71,7 +78,7 @@ def stop_monitoring():
     return 'Stopping the Resource and VM Management infrastructure'
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port='1010')
+    app.run(debug=True, host='0.0.0.0', port='5001')
 
 
 
