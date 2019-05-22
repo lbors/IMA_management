@@ -11,9 +11,15 @@ master_ip = '1.1.1.1'
 
 @app.route('/setIPandPort', methods = ['POST'])
 def set_IP():
-    global master_ip
+    global master_ip, port
     data = request.data.decode('utf-8')
-    master_ip = data
+    data = data.split(':')
+    master_ip = data[0]
+    master_port = data[1]
+
+    print("IP do master: " + master_ip)
+    print("Porta do master: " + master_port)
+    return 'OK'
 
 @app.route('/')
 def default_options():

@@ -9,12 +9,38 @@ import time
 from subprocess import call
 
 app = Flask(__name__)
-slice_dict = {"slice":[]}
+adapter_dict = {"adapters":[]}
+cont = 0
 # port_server = 8080
 # master_ip = '192.168.1.151'
 
+@app.route('/listPods', methods = ['POST']) 
+def list_pods():
+    data = request.data.decode('utf-8')
+    print(data)
+    for i in adapter_dict['adapters']:
+        # print(i['adapter_id'] + " == " + data)
+        if i['adapter_id'] == data:
+            # resp = requests.get("http://" + master_ip + ":" + str(port) + "/api/v1/namespaces/" + data['namespace'] + "/pods/")
+            resp = requests.get("http://0.0.0.0:" + str(i['port']) + "/listPods")
+            # resp = requests.get("http://0.0.0.0:" + "6661" + "/listPods") # DEBUGGGGGGGGG
+            parsed = json.loads(resp.content)
+            print(json.dumps(parsed, indent=2))
+            return 'OK'
+    return 'Adapter not found'
+
+@app.route('/listPods', methods = ['GET']) 
+def list_all_pods():
+    data = request.data.decode('utf-8')
+    print(data)
+    for i in adapter_dict['adapters']:
+        resp = requests.get("http://0.0.0.0:" + str(i['port']) + "/listPods")
+        parsed = json.loads(resp.content)
+        print(json.dumps(parsed, indent=2))
+    return 'OK'
+
 def start_slice_adapter(json_content):
-    global slice_dict
+    global adapter_dict, cont
     
     #Start container for the IMA Agents/Adapters
     for i in json_content['dc-slice-part']:
@@ -31,30 +57,45 @@ def start_slice_adapter(json_content):
         for j in i['vdus']: 
             if str(j['dc-vdu']['type']) == "master":
                 temp_ip = str(j['dc-vdu']['ip-address']) # identifica o mestre e salva o ip nessa string
+                temp_port = str(j['dc-vdu']['port'])
 
-        client = docker.from_env()
-        client.containers.run("agentwill:latest", detach=True, name=agent_name, ports={'1010/tcp': ('localhost', port)})
-        print("http://0.0.0.0:" + str(port) + "/setIPandPort")
-        time.sleep(3)
+        # client = docker.from_env()
+        # client.containers.run("agentwill:latest", detach=True, name=agent_name, ports={'1010/tcp': ('localhost', port)})
+        # print("http://0.0.0.0:" + str(port) + "/setIPandPort")
+        # time.sleep(3)
+        master_data = temp_ip + ":" + temp_port
+        # adapter_dict["adapters"].append({"adapter_id":"adapter" + str(cont),"adapter_name":agent_name,"port":str(port)})
+        adapter_dict["adapters"].append({"adapter_id":"adapter" + str(cont),"adapter_name":agent_name,"port":6661}) # DEBUG
+        cont += 1
 
-        requests.post("http://0.0.0.0:" + str(port) + "/setIPandPort", data = temp_ip)
-        # requests.post("http://0.0.0.0:" + "5000" + "/setIPandPort", data = temp_ip)
+        # print(json.dumps(adapter_dict, indent=2))
+
+        # requests.post("http://0.0.0.0:" + str(port) + "/setIPandPort", data = master_data)
+        requests.post("http://0.0.0.0:" + "6661" + "/setIPandPort", data = master_data) # DEBUG
         print("The Adapter", agent_name, "has started")
 
 @app.route('/')
 def default_options():
     return 'Welcome to Resource and VM Management of IMA!'
 
-# @app.route('/startManagementAdapter', methods = ['POST'])
-# def start_monitoring():
-#     params = request.data.decode('utf-8')
-#     print("Imprimindo os params" + params)
-#     # command = "python3.6 IMAv2/slice_aggregator/slice_aggregator.py " + params + " & >> agg_main.log"
-#     command = "python3.6 IMA_management/engine_controller/engine_controller.py"
-#     call(command, shell=True)
+@app.route('/listAdapters', methods = ['GET'])
+def list_adapters():
+    print(json.dumps(adapter_dict, indent=2))
+    return 'OK'
 
-#     return "Starting Monitoring infrastructure"
-
+@app.route('/deleteAdapter', methods = ['POST'])
+def delete_adapter():
+    data = request.data.decode('utf-8')
+    print(data)
+    for i in adapter_dict['adapters']:
+        if i['adapter_id'] == data:
+            client = docker.from_env()
+            container = client.containers.get(i['adapter_name'])
+            container.stop()
+            container.remove()
+            del i['adapter_id']
+            return 'OK'
+    return 'Adapter not found'
 
 @app.route('/startManagementAdapter', methods = ['POST'])
 def start_monitoring():
