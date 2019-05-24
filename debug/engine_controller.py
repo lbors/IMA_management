@@ -10,22 +10,48 @@ from subprocess import call
 
 app = Flask(__name__)
 adapter_dict = {"adapters":[]}
+adapter_dict_simulado = {
+  "adapters": [
+    {
+      "slice-id": "Telemarketing",
+      "parts": [
+        {
+          "slice_part_id": "slice-part-test-01",
+          "adapter_name": "slice-part-test-01_Tim_agent",
+          "port": "57421"
+        },
+        {
+          "slice_part_id": "slice-part-test-02",
+          "adapter_name": "slice-part-test-02_Vivo_agent",
+          "port": "41601"
+        },
+        {
+          "slice_part_id": "slice-part-test-03",
+          "adapter_name": "slice-part-test-03_Clarooo_agent",
+          "port": "46219"
+        }
+      ]
+    }
+  ]
+}
+
 # port_server = 8080
 # master_ip = '192.168.1.151'
 
 @app.route('/listPods', methods = ['POST']) 
 def list_pods():
-    data = request.data.decode('utf-8')
-    print(data)
-    for i in adapter_dict['adapters']:
-        # print(i['adapter_id'] + " == " + data)
-        if i['slice_part_id'] == data:
-            # resp = requests.get("http://" + master_ip + ":" + str(port) + "/api/v1/namespaces/" + data['namespace'] + "/pods/")
-            resp = requests.get("http://0.0.0.0:" + str(i['port']) + "/listPods")
-            # resp = requests.get("http://0.0.0.0:" + "6661" + "/listPods") # DEBUGGGGGGGGG
-            parsed = json.loads(resp.content)
-            print(json.dumps(parsed, indent=2))
-            return 'OK'
+    post_data = request.data.decode('utf-8') # exemplo de data: "Telemarketing, slice-part-test-01, espaco-testes"
+    post_data = post_data.split(', ')    
+    # print(data)
+
+    for adapter_iterator in adapter_dict['adapters']:
+        if adapter_iterator['slice-id'] == post_data[0]:
+            for slice_part_it in adapter_iterator['parts']:
+                if slice_part_it['slice_part_id'] == post_data[1]:
+                    resp = requests.get("http://0.0.0.0:" + slice_part_it['port'] + "/listPods")
+                    parsed = json.loads(resp.content)
+                    print(json.dumps(parsed, indent=2))
+                    return 'OK'
     return 'Adapter not found'
 
 @app.route('/listPods', methods = ['GET']) 
@@ -59,18 +85,12 @@ def start_slice_adapter(json_content):
                 temp_ip = str(j['dc-vdu']['ip-address']) # identifica o mestre e salva o ip nessa string
                 temp_port = str(j['dc-vdu']['port'])
 
-        # client = docker.from_env()
-        # client.containers.run("agentwill:latest", detach=True, name=agent_name, ports={'1010/tcp': ('localhost', port)})
-        # print("http://0.0.0.0:" + str(port) + "/setIPandPort")
-        # time.sleep(3)
         master_data = temp_ip + ":" + temp_port
-        # adapter_dict["adapters"].append({"adapter_id":"adapter" + str(cont),"adapter_name":agent_name,"port":str(port)})
-        adapter_dict["adapters"].append({"slice_part_id":slice_name,"adapter_name":agent_name,"port":6661}) # DEBUG
+        adapter_dict["adapters"].append({"slice_part_id":slice_name,"adapter_name":agent_name,"port":6661}) 
 
         # print(json.dumps(adapter_dict, indent=2))
 
-        # requests.post("http://0.0.0.0:" + str(port) + "/setIPandPort", data = master_data)
-        requests.post("http://0.0.0.0:" + "6661" + "/setIPandPort", data = master_data) # DEBUG
+        requests.post("http://0.0.0.0:" + "6661" + "/setIPandPort", data = master_data) 
         print("The Adapter", agent_name, "has started")
 
 @app.route('/')

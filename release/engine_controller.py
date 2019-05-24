@@ -18,21 +18,21 @@ adapter_dict = {"adapters":[]}
 @app.route('/listPods', methods = ['POST']) 
 def list_pods():
     post_data = request.data.decode('utf-8') # exemplo de data: "Telemarketing, slice-part-test-01, espaco-testes"
-    post_data = post_data.split(', ')    
+    splitted_data = post_data.split(', ')    
     # print(data)
 
     for adapter_iterator in adapter_dict['adapters']:
-        if adapter_iterator['slice-id'] == post_data[0]:
+        if adapter_iterator['slice-id'] == splitted_data[0]:
             for slice_part_it in adapter_iterator['parts']:
-                if slice_part_it['slice_part_id'] == post_data[1]:
+                if slice_part_it['slice_part_id'] == splitted_data[1]:
+                    resp = requests.post("http://0.0.0.0:" + slice_part_it['port'] + "/listPods", data = post_data)
+                    parsed = json.loads(resp.content)
+                    print(json.dumps(parsed, indent=2))
+                    return 'OK'
+    # resp = requests.get("http://" + master_ip + ":" + str(port) + "/api/v1/namespaces/" + data['namespace'] + "/pods/")
+    return 'Adapter not found'
                     
 
-            # resp = requests.get("http://" + master_ip + ":" + str(port) + "/api/v1/namespaces/" + data['namespace'] + "/pods/")
-            resp = requests.get("http://0.0.0.0:" + adapter_iterator['port'] + "/listPods")
-            parsed = json.loads(resp.content)
-            print(json.dumps(parsed, indent=2))
-            return 'OK'
-    return 'Adapter not found'
 
 @app.route('/listPods', methods = ['GET']) 
 def list_all_pods():

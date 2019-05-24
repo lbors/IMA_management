@@ -20,7 +20,7 @@ RUN \
     pip3 install docker && \
     apt -y install iputils-ping && \
     cd IMA_management/ && \
-    git checkout master && \
+    git checkout production && \
     git pull
 
-ENTRYPOINT python3.6 IMA_management/adapter.py >> adapter.log
+ENTRYPOINT python3.6 IMA_management/release/adapter.py >> adapter.log
