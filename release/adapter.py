@@ -6,16 +6,16 @@ import docker
 import json
 
 app = Flask(__name__)
-port = 8080
+master_port = 8080
 master_ip = '1.1.1.1'
 
 @app.route('/setIPandPort', methods = ['POST'])
 def set_IP():
-    global master_ip, port
-    data = request.data.decode('utf-8')
-    data = data.split(':')
-    master_ip = data[0]
-    master_port = data[1]
+    global master_ip, master_port
+    post_data = request.data.decode('utf-8')
+    post_data = post_data.split(':')
+    master_ip = post_data[0]
+    master_port = post_data[1]
 
     print("IP do master: " + master_ip)
     print("Porta do master: " + master_port)
@@ -25,30 +25,16 @@ def set_IP():
 def default_options():
     return 'Welcome to the adapter X of Resource and VM Management'
 
-# sem argumentos, o metodo lista os pods do namespace DEFAULT
-@app.route('/listPods', methods = ['GET']) 
-def list_pods_default():
-    resp = requests.get("http://" + master_ip + ":" + str(port) + "/api/v1/namespaces/default/pods/")
-    #resp = requests.get("http://192.168.1.151:8080/api/v1/namespaces/espaco-testes/pods/")
-    parsed = json.loads(resp.content)
-    print(json.dumps(parsed, indent=2))
-    return str(resp.status_code)
-
-# namespace é passado como argumento 
+# slice_id, slice_part_id e namespace sao passados como argumentos
 @app.route('/listPods', methods = ['POST']) 
 def list_pods():
-    # ler arquivo de parametro
-    file_name = request.data.decode('utf-8')
-    file = open(file_name, "r")
-    yaml_content = file.read()
-    file.close()
-    data = yaml.safe_load(yaml_content) # parsear pra yaml
+    post_data = request.data.decode('utf-8') # exemplo de data: "Telemarketing, slice-part-test-01, espaco-testes"
+    post_data = post_data.split(', ')
 
-    resp = requests.get("http://" + master_ip + ":" + str(port) + "/api/v1/namespaces/" + data['namespace'] + "/pods/")
+    resp = requests.get("http://" + master_ip + ":" + str(master_port) + "/api/v1/namespaces/" + post_data[2] + "/pods/")
     parsed = json.loads(resp.content)
     print(json.dumps(parsed, indent=2))
-
-    return str(resp.status_code)
+    return (json.dumps(parsed, indent=2))
 
 @app.route('/getPod', methods = ['POST'])
 def get_pod():

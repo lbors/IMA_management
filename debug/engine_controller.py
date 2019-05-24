@@ -10,7 +10,6 @@ from subprocess import call
 
 app = Flask(__name__)
 adapter_dict = {"adapters":[]}
-cont = 0
 # port_server = 8080
 # master_ip = '192.168.1.151'
 
@@ -20,7 +19,7 @@ def list_pods():
     print(data)
     for i in adapter_dict['adapters']:
         # print(i['adapter_id'] + " == " + data)
-        if i['adapter_id'] == data:
+        if i['slice_part_id'] == data:
             # resp = requests.get("http://" + master_ip + ":" + str(port) + "/api/v1/namespaces/" + data['namespace'] + "/pods/")
             resp = requests.get("http://0.0.0.0:" + str(i['port']) + "/listPods")
             # resp = requests.get("http://0.0.0.0:" + "6661" + "/listPods") # DEBUGGGGGGGGG
@@ -40,7 +39,7 @@ def list_all_pods():
     return 'OK'
 
 def start_slice_adapter(json_content):
-    global adapter_dict, cont
+    global adapter_dict
     
     #Start container for the IMA Agents/Adapters
     for i in json_content['dc-slice-part']:
@@ -53,7 +52,8 @@ def start_slice_adapter(json_content):
         s.bind(('localhost', 0))
         port = s.getsockname()[1]
         s.close()
-
+        # SALVAR: slice_part_id, slice port
+        ######## slice-part-test-01, espaco-teste, nginx
         for j in i['vdus']: 
             if str(j['dc-vdu']['type']) == "master":
                 temp_ip = str(j['dc-vdu']['ip-address']) # identifica o mestre e salva o ip nessa string
@@ -65,8 +65,7 @@ def start_slice_adapter(json_content):
         # time.sleep(3)
         master_data = temp_ip + ":" + temp_port
         # adapter_dict["adapters"].append({"adapter_id":"adapter" + str(cont),"adapter_name":agent_name,"port":str(port)})
-        adapter_dict["adapters"].append({"adapter_id":"adapter" + str(cont),"adapter_name":agent_name,"port":6661}) # DEBUG
-        cont += 1
+        adapter_dict["adapters"].append({"slice_part_id":slice_name,"adapter_name":agent_name,"port":6661}) # DEBUG
 
         # print(json.dumps(adapter_dict, indent=2))
 
@@ -88,12 +87,12 @@ def delete_adapter():
     data = request.data.decode('utf-8')
     print(data)
     for i in adapter_dict['adapters']:
-        if i['adapter_id'] == data:
+        if i['slice_part_id'] == data:
             client = docker.from_env()
             container = client.containers.get(i['adapter_name'])
             container.stop()
             container.remove()
-            del i['adapter_id']
+            del i['slice_part_id']
             return 'OK'
     return 'Adapter not found'
 
@@ -124,5 +123,7 @@ if __name__ == '__main__':
 
 
 
-#possiveis erros:
-#- maquina ta subindo com ip que nao é 0.0.0.0
+#TODO
+#- deletar adapters
+#- salva adapter no fim da execucao
+#- yaml ou string?
