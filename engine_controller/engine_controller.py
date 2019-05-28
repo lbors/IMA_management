@@ -6,35 +6,37 @@ import docker
 import json
 
 app = Flask(__name__)
-master_port = 8080
-master_ip = '1.1.1.1'
-
-@app.route('/setIPandPort', methods = ['POST'])
-def set_IP():
-    global master_ip, master_port
-    post_data = request.data.decode('utf-8')
-    post_data = post_data.split(':')
-    master_ip = post_data[0]
-    master_port = post_data[1]
-
-    print("IP do master: " + master_ip)
-    print("Porta do master: " + master_port)
-    return 'OK'
+port = 8080
+master_ip = '192.168.1.151'
 
 @app.route('/')
 def default_options():
-    return 'Welcome to the adapter X of Resource and VM Management'
+    return 'Welcome to Resource and VM Management (IMA)!'
 
-# slice_id, slice_part_id e namespace sao passados como argumentos
-@app.route('/listPods', methods = ['POST']) 
-def list_pods():
-    post_data = request.data.decode('utf-8') # exemplo de data: "Telemarketing, slice-part-test-01, espaco-testes"
-    post_data = post_data.split(', ')
-
-    resp = requests.get("http://" + master_ip + ":" + str(master_port) + "/api/v1/namespaces/" + post_data[2] + "/pods/")
+# sem argumentos, o metodo lista os pods do namespace DEFAULT
+@app.route('/listPods', methods = ['GET']) 
+def list_pods_default():
+    resp = requests.get("http://" + master_ip + ":" + str(port) + "/api/v1/namespaces/default/pods/")
+    #resp = requests.get("http://192.168.1.151:8080/api/v1/namespaces/espaco-testes/pods/")
     parsed = json.loads(resp.content)
     print(json.dumps(parsed, indent=2))
-    return (json.dumps(parsed, indent=2))
+    return str(resp.status_code)
+
+# namespace é passado como argumento 
+@app.route('/listPods', methods = ['POST']) 
+def list_pods():
+    # ler arquivo de parametro
+    file_name = request.data.decode('utf-8')
+    file = open(file_name, "r")
+    yaml_content = file.read()
+    file.close()
+    data = yaml.safe_load(yaml_content) # parsear pra yaml
+
+    resp = requests.get("http://" + master_ip + ":" + str(port) + "/api/v1/namespaces/" + data['namespace'] + "/pods/")
+    parsed = json.loads(resp.content)
+    print(json.dumps(parsed, indent=2))
+
+    return str(resp.status_code)
 
 @app.route('/getPod', methods = ['POST'])
 def get_pod():
@@ -47,7 +49,7 @@ def get_pod():
     file.close()
     data = yaml.load(yaml_content)
 
-    resp = requests.get("http://" + master_ip + ":" + str(master_port) + "/api/v1/namespaces/" + data['namespace'] + "/pods/" + data['name'])
+    resp = requests.get("http://" + master_ip + ":" + str(port) + "/api/v1/namespaces/" + data['namespace'] + "/pods/" + data['name'])
 
     parsed = json.loads(resp.content)
     print(json.dumps(parsed, indent=2))
@@ -73,7 +75,7 @@ def create_pod():
     # -d@{arquivo}.json 
 
     for pod_id in json_content['pod_info']:
-        resp = requests.post("http://" + master_ip + ":" + str(master_port) + "/api/v1/namespaces/" + pod_id['metadata']['namespace'] 
+        resp = requests.post("http://" + master_ip + ":" + str(port) + "/api/v1/namespaces/" + pod_id['metadata']['namespace'] 
                             + "/pods/", data = json.dumps(pod_id))
         print(str(resp.status_code) + "\n")
 
@@ -98,7 +100,7 @@ def delete_pod():
     # resp = requests.delete("http://" + master_ip + ":" + str(port) + "/api/v1/namespaces/" + data['podInfo']['namespace'] + "/pods/" + data['podInfo']['name'])
 
     for pod_id in json_content['pod_info']:
-        resp = requests.delete("http://" + master_ip + ":" + str(master_port) + "/api/v1/namespaces/" + pod_id['metadata']['namespace'] 
+        resp = requests.delete("http://" + master_ip + ":" + str(port) + "/api/v1/namespaces/" + pod_id['metadata']['namespace'] 
                             + "/pods/" + pod_id['metadata']['name'])
         print(str(resp.status_code) + "\n")
 
@@ -113,7 +115,7 @@ def list_services():
     file.close()
     data = yaml.safe_load(yaml_content) # parsear pra yaml
 
-    resp = requests.get("http://" + master_ip + ":" + str(master_port) + "/api/v1/namespaces/" + data['namespace'] + "/services/")
+    resp = requests.get("http://" + master_ip + ":" + str(port) + "/api/v1/namespaces/" + data['namespace'] + "/services/")
     parsed = json.loads(resp.content)
     print(json.dumps(parsed, indent=2))
 
@@ -135,7 +137,7 @@ def create_service():
     json_content = json.loads(json_content)
 
     for service_id in json_content['service_info']:
-        resp = requests.post("http://" + master_ip + ":" + str(master_port) + "/api/v1/namespaces/" + json_content['namespace'] 
+        resp = requests.post("http://" + master_ip + ":" + str(port) + "/api/v1/namespaces/" + json_content['namespace'] 
                             + "/services/", data = json.dumps(service_id))
         print(str(resp.status_code) + "\n")
 
@@ -152,7 +154,7 @@ def get_service():
     file.close()
     data = yaml.load(yaml_content)
 
-    resp = requests.get("http://" + master_ip + ":" + str(master_port) + "/api/v1/namespaces/" + data['namespace'] + "/services/" + data['name'])
+    resp = requests.get("http://" + master_ip + ":" + str(port) + "/api/v1/namespaces/" + data['namespace'] + "/services/" + data['name'])
 
     parsed = json.loads(resp.content)
     print(json.dumps(parsed, indent=2))
@@ -175,7 +177,7 @@ def delete_service():
     json_content = json.loads(json_content)
 
     for service_id in json_content['service_info']:
-        resp = requests.delete("http://" + master_ip + ":" + str(master_port) + "/api/v1/namespaces/" + json_content['namespace'] 
+        resp = requests.delete("http://" + master_ip + ":" + str(port) + "/api/v1/namespaces/" + json_content['namespace'] 
                             + "/services/" + service_id['metadata']['name'])
         print(str(resp.status_code) + "\n")
 
@@ -183,10 +185,9 @@ def delete_service():
 
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port='1010')
+    app.run(debug=True, host='0.0.0.0')
 
 
 
-#TODO 
-#- melhorar leitura
+#TODO melhorar leitura
 #- deixar bonito???????
