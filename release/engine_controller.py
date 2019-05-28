@@ -17,12 +17,12 @@ adapter_dict = {"adapters":[]}
 # slice_id, slice_part_id e namespace sao passados como argumentos
 @app.route('/listPods', methods = ['POST']) 
 def list_pods():
-    post_data = request.data.decode('utf-8') # exemplo de data: "Telemarketing, slice-part-test-01, espaco-testes"
-    splitted_data = post_data.split(', ')    
+    post_data = request.data.decode('utf-8') # exemplo de data: "Telemarketing;slice-part-test-01;espaco-testes"
+    splitted_data = post_data.split(';')    
     # print(data)
 
     for adapter_iterator in adapter_dict['adapters']:
-        if adapter_iterator['slice-id'] == splitted_data[0]:
+        if adapter_iterator['slice_id'] == splitted_data[0]:
             for slice_part_it in adapter_iterator['parts']:
                 if slice_part_it['slice_part_id'] == splitted_data[1]:
                     resp = requests.post("http://0.0.0.0:" + slice_part_it['port'] + "/listPods", data = post_data)
@@ -31,25 +31,14 @@ def list_pods():
                     return 'OK'
     # resp = requests.get("http://" + master_ip + ":" + str(port) + "/api/v1/namespaces/" + data['namespace'] + "/pods/")
     return 'Adapter not found'
-                    
-
-
-@app.route('/listPods', methods = ['GET']) 
-def list_all_pods():
-    data = request.data.decode('utf-8')
-    print(data)
-    for i in adapter_dict['adapters']:
-        resp = requests.get("http://0.0.0.0:" + str(i['port']) + "/listPods")
-        parsed = json.loads(resp.content)
-        print(json.dumps(parsed, indent=2))
-    return 'OK'
 
 def start_slice_adapter(json_content):
     global adapter_dict
     
     #Start container for the IMA Agents/Adapters
-    adapter_dict["adapters"].append({"slice-id":json_content['slice-id'],"parts":[]})
-
+    adapter_dict["adapters"].append({"slice_id":json_content['slice-id'],"parts":[]})
+    # no json_content, a variavel slice-id eh escrita com '-' (simbolo de subtracao), porem no adapter_dict usaremos '_' (underline)
+    
     for i in json_content['dc-slice-part']:
         slice_name = i['name']
         slice_user = i['user']
@@ -74,7 +63,7 @@ def start_slice_adapter(json_content):
         master_data = temp_ip + ":" + temp_port
         for k in adapter_dict['adapters']:
             # print(k)
-            if k['slice-id'] == json_content['slice-id']:
+            if k['slice_id'] == json_content['slice-id']:
                 k['parts'].append({"slice_part_id":slice_name,"adapter_name":agent_name,"port":str(port)})
         # adapter_dict["adapters"].append({"slice_part_id":slice_name,"adapter_name":agent_name,"port":str(port)})
 
@@ -94,25 +83,28 @@ def list_adapters():
     print(json.dumps(adapter_dict, indent=2))
     return 'OK'
 
-@app.route('/deleteAdapter', methods = ['POST'])
+@app.route('/stopSlicePart', methods = ['POST'])
 def delete_adapter():
-    data = request.data.decode('utf-8')
-    print(data)
-    for i in adapter_dict['adapters']:
-        if i['slice_part_id'] == data:
-            client = docker.from_env()
-            container = client.containers.get(i['adapter_name'])
-            container.stop()
-            container.remove()
-            del i['slice_part_id']
-            return 'OK'
+    post_data = request.data.decode('utf-8')
+    splitted_data = post_data.split(';')
+
+    for adapter_iterator in adapter_dict['adapters']:
+        if adapter_iterator['slice_id'] == splitted_data[0]:
+            for slice_part_it in adapter_iterator['parts']:
+                if slice_part_it['slice_part_id'] == splitted_data[1]:
+                    client = docker.from_env()
+                    container = client.containers.get(slice_part_it['adapter_name'])
+                    container.stop()
+                    container.remove()
+                    del slice_part_it
+                    return 'OK'
     return 'Adapter not found'
 
 @app.route('/startManagementAdapter', methods = ['POST'])
 def start_monitoring():
-    #print(request.headers)
+    # print(request.headers)
     file_name = request.data.decode('utf-8')
-    print(file_name)
+    # print(file_name)
     file = open(file_name, "r")
     yaml_content = file.read()
     file.close()

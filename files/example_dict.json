@@ -1,7 +1,7 @@
 {
   "adapters": [
     {
-      "slice-id": "Telemarketing",
+      "slice_id": "Telemarketing",
       "parts": [
         {
           "slice_part_id": "slice-part-test-01",
