@@ -38,32 +38,6 @@ adapter_dict_simulado = {
 # port_server = 8080
 # master_ip = '192.168.1.151'
 
-@app.route('/listPods', methods = ['POST']) 
-def list_pods():
-    post_data = request.data.decode('utf-8') # exemplo de data: "Telemarketing, slice-part-test-01, espaco-testes"
-    post_data = post_data.split(', ')    
-    # print(data)
-
-    for adapter_iterator in adapter_dict['adapters']:
-        if adapter_iterator['slice-id'] == post_data[0]:
-            for slice_part_it in adapter_iterator['parts']:
-                if slice_part_it['slice_part_id'] == post_data[1]:
-                    resp = requests.get("http://0.0.0.0:" + slice_part_it['port'] + "/listPods")
-                    parsed = json.loads(resp.content)
-                    print(json.dumps(parsed, indent=2))
-                    return 'OK'
-    return 'Adapter not found'
-
-@app.route('/listPods', methods = ['GET']) 
-def list_all_pods():
-    data = request.data.decode('utf-8')
-    print(data)
-    for i in adapter_dict['adapters']:
-        resp = requests.get("http://0.0.0.0:" + str(i['port']) + "/listPods")
-        parsed = json.loads(resp.content)
-        print(json.dumps(parsed, indent=2))
-    return 'OK'
-
 def start_slice_adapter(json_content):
     global adapter_dict
     
@@ -101,20 +75,6 @@ def default_options():
 def list_adapters():
     print(json.dumps(adapter_dict, indent=2))
     return 'OK'
-
-@app.route('/deleteAdapter', methods = ['POST'])
-def delete_adapter():
-    data = request.data.decode('utf-8')
-    print(data)
-    for i in adapter_dict['adapters']:
-        if i['slice_part_id'] == data:
-            client = docker.from_env()
-            container = client.containers.get(i['adapter_name'])
-            container.stop()
-            container.remove()
-            del i['slice_part_id']
-            return 'OK'
-    return 'Adapter not found'
 
 @app.route('/startManagementAdapter', methods = ['POST'])
 def start_monitoring():

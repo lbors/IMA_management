@@ -13,6 +13,24 @@ adapter_dict = {"adapters":[]}
 # port_server = 8080
 # master_ip = '192.168.1.151'
 
+@app.route('/getPod', methods = ['POST']) 
+def get_pod():
+    post_data = request.data.decode('utf-8') # exemplo de data: "Telemarketing;slice-part-test-01;espaco-testes;nginx"
+    splitted_data = post_data.split(';')    
+    # print(data)
+
+    for adapter_iterator in adapter_dict['adapters']:
+        if adapter_iterator['slice_id'] == splitted_data[0]:
+            for slice_part_it in adapter_iterator['parts']:
+                if slice_part_it['slice_part_id'] == splitted_data[1]:
+                    yaml = str('---\nnamespace: ' + splitted_data[2] + '\nname: ' + splitted_data[3])
+                    resp = requests.post("http://0.0.0.0:" + slice_part_it['port'] + "/listPods", data = yaml)
+                    parsed = json.loads(resp.content)
+                    print(json.dumps(parsed, indent=2))
+                    return 'OK'
+    # resp = requests.get("http://" + master_ip + ":" + str(port) + "/api/v1/namespaces/" + data['namespace'] + "/pods/")
+    return 'Adapter not found'
+
 
 # slice_id, slice_part_id e namespace sao passados como argumentos
 @app.route('/listPods', methods = ['POST']) 
@@ -117,6 +135,21 @@ def start_monitoring():
     return 'OK'
 
 @app.route('/stopManagementAdapter')
+def delete_slice():
+    post_data = request.data.decode('utf-8') # exemplo de entrada: "Telefonica"
+
+    for adapter_iterator in adapter_dict['adapters']:
+        if adapter_iterator['slice_id'] == post_data:
+            for slice_part_it in adapter_iterator['parts']:
+                client = docker.from_env()
+                container = client.containers.get(slice_part_it['adapter_name'])
+                container.stop()
+                container.remove()
+                del slice_part_it
+            del adapter_iterator
+            return 'The slice ' + adapter_iterator['slice_id'] + ' has been deleted.'
+    return 'Adapter not found'
+
 def stop_monitoring():
     return 'Stopping the Resource and VM Management infrastructure'
 

@@ -21,6 +21,25 @@ def set_IP():
     print("Porta do master: " + master_port)
     return 'OK'
 
+
+@app.route('/getPod', methods = ['POST'])
+def get_pod():
+    file_name = request.data.decode('utf-8')
+    print(file_name)
+
+    # ler arquivo de parametro
+    file = open(file_name, "r")
+    yaml_content = file.read()
+    file.close()
+    data = yaml.load(yaml_content)
+
+    # resp = requests.get("http://" + master_ip + ":" + str(master_port) + "/api/v1/namespaces/" + data['namespace'] + "/pods/" + data['name'])
+
+    # parsed = json.loads(resp.content)
+    print(yaml.dump(data))
+    # print(json.dumps(parsed, indent=2))
+    return 'Yesnt'
+
 @app.route('/listPods', methods = ['GET']) 
 def list_pods_default():
     resp = requests.get("http://" + master_ip + ":" + str(master_port) + "/api/v1/namespaces/default/pods/")
