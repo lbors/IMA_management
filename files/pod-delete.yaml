@@ -1,4 +1,5 @@
 ---
+slice_part_id: slice-part-test-01
 podInfo:
     pod_creation: 
       - pod: 
