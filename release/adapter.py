@@ -56,7 +56,7 @@ def get_pod():
 @app.route('/createPod', methods = ['POST'])
 def create_pod():
     file_name = request.data.decode('utf-8')
-    print(file_name)
+    # print(file_name)
 
     # ler arquivo de parametro
     file = open(file_name, "r")
