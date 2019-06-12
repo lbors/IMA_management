@@ -15,7 +15,7 @@ curl --header "Content-Type: application/text" \
 
 
 
-curl --header "Content-Type: */yaml" \
+curl --header "Content-Type: */yaml" \'
     --request POST \
     --data '/home/williamgdo/Documentos/git/IMA_management/yamlFiles/pod-desejado.yaml' \
     http://localhost:5000/getPod
@@ -27,8 +27,6 @@ curl --header "Content-Type: */yaml" \
   -XPOST -H 'Content-Type: application/json' \
   -d @  
 
-curl --header "Content-Type: */yaml" --request POST --data 'yamlFiles/cluster.yaml' http://0.0.0.0:5001/startManagementAdapter
-
 curl --request POST --data 'adapter0' --header "Content-Type: */*" http://0.0.0.0:5001/listPods
 
 
@@ -36,6 +34,7 @@ curl --request POST --data 'adapter0' --header "Content-Type: */*" http://0.0.0.
 curl --request GET http://0.0.0.0:5001/
 curl --request GET http://0.0.0.0:5001/listAdapters
 curl --header "Content-Type: */yaml" --request POST --data '../files/cluster.yaml' http://0.0.0.0:5001/startManagement
+curl --header "Content-Type: */yaml" --request POST --data 'Telefonica' http://0.0.0.0:5001/stopManagement
 
 
 comandos uteis:
