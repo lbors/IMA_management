@@ -22,23 +22,20 @@ def set_IP():
     return 'OK'
 
 
-@app.route('/getPod', methods = ['POST'])
-def get_pod():
-    file_name = request.data.decode('utf-8')
-    print(file_name)
+@app.route('/createService', methods = ['POST'])
+def create_service():
+    yaml_content = request.data.decode('utf-8')
 
-    # ler arquivo de parametro
-    file = open(file_name, "r")
-    yaml_content = file.read()
-    file.close()
-    data = yaml.load(yaml_content)
+    # carrega o YAML, "parseia" pra Json 
+    data = yaml.safe_load(yaml_content)
+    json_content = json.dumps(data)
+    json_content = json.loads(json_content)
 
-    # resp = requests.get("http://" + master_ip + ":" + str(master_port) + "/api/v1/namespaces/" + data['namespace'] + "/pods/" + data['name'])
-
-    # parsed = json.loads(resp.content)
-    print(yaml.dump(data))
-    # print(json.dumps(parsed, indent=2))
-    return 'Yesnt'
+    for service_id in json_content['service_info']:
+        resp = requests.post("http://" + master_ip + ":" + str(master_port) + "/api/v1/namespaces/" + json_content['namespace'] 
+                            + "/services/", data = json.dumps(service_id))
+        print(str(resp.status_code) + "\n")
+    return 'OK'
 
 @app.route('/listPods', methods = ['GET']) 
 def list_pods_default():

@@ -121,16 +121,10 @@ def list_services():
 
 @app.route('/createService', methods = ['POST'])
 def create_service():
-    file_name = request.data.decode('utf-8')
-    print(file_name)
-
-    # ler arquivo de parametro
-    file = open(file_name, "r")
-    yaml_content = file.read()
-    file.close()
+    yaml_content = request.data.decode('utf-8')
 
     # carrega o YAML, "parseia" pra Json 
-    data = yaml.load(yaml_content)
+    data = yaml.safe_load(yaml_content)
     json_content = json.dumps(data)
     json_content = json.loads(json_content)
 
@@ -138,7 +132,6 @@ def create_service():
         resp = requests.post("http://" + master_ip + ":" + str(master_port) + "/api/v1/namespaces/" + json_content['namespace'] 
                             + "/services/", data = json.dumps(service_id))
         print(str(resp.status_code) + "\n")
-
     return 'OK'
 
 @app.route('/getService', methods = ['POST'])
@@ -161,16 +154,10 @@ def get_service():
 
 @app.route('/deleteService', methods = ['POST']) 
 def delete_service():
-    file_name = request.data.decode('utf-8')
-    print(file_name)
-
-    # ler arquivo de parametro
-    file = open(file_name, "r")
-    yaml_content = file.read()
-    file.close()
+    yaml_content = request.data.decode('utf-8')
 
     # carrega o YAML, "parseia" pra Json 
-    data = yaml.load(yaml_content)
+    data = yaml.safe_load(yaml_content)
     json_content = json.dumps(data)
     json_content = json.loads(json_content)
 
