@@ -63,7 +63,7 @@ def create_service():
     yaml_content = file.read()
     file.close()
 
-    # carrega o YAML e "parseia" pra Json 
+    # carrega o YAML e "parseia" pra Json  
     data = yaml.safe_load(yaml_content)
     json_content = json.dumps(data)
     json_content = json.loads(json_content)
