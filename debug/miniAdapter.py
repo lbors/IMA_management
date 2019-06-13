@@ -37,6 +37,7 @@ def create_service():
         print(str(resp.status_code) + "\n")
     return 'OK'
 
+
 @app.route('/listPods', methods = ['GET']) 
 def list_pods_default():
     resp = requests.get("http://" + master_ip + ":" + str(master_port) + "/api/v1/namespaces/default/pods/")

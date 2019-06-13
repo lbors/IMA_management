@@ -13,7 +13,7 @@ adapter_dict = {"adapters":[]}
 adapter_dict_simulado = {
   "adapters": [
     {
-      "slice-id": "Telemarketing",
+      "slice_id": "Telemarketing",
       "parts": [
         {
           "slice_part_id": "slice-part-test-01",
@@ -42,6 +42,9 @@ def start_slice_adapter(json_content):
     global adapter_dict
     
     #Start container for the IMA Agents/Adapters
+    adapter_dict["adapters"].append({"slice_id":json_content['slice-id'],"parts":[]})
+    # no json_content, a variavel slice-id eh escrita com '-' (simbolo de subtracao), porem no adapter_dict usaremos '_' (underline)
+    
     for i in json_content['dc-slice-part']:
         slice_name = i['name']
         slice_user = i['user']
@@ -53,19 +56,29 @@ def start_slice_adapter(json_content):
         port = s.getsockname()[1]
         s.close()
         # SALVAR: slice_part_id, slice port
-        ######## slice-part-test-01, espaco-teste, nginx
+        ######## slice-part-test-01, espaco-teste, nginx -> CHAMADA DE UM /getPod
         for j in i['vdus']: 
             if str(j['dc-vdu']['type']) == "master":
                 temp_ip = str(j['dc-vdu']['ip-address']) # identifica o mestre e salva o ip nessa string
                 temp_port = str(j['dc-vdu']['port'])
 
+        # client = docker.from_env()
+        # client.containers.run("agentwill:latest", detach=True, name=agent_name, ports={'1010/tcp': ('localhost', port)})
+        print("http://0.0.0.0:" + str(port) + "/setIPandPort")
+        # time.sleep(3)
         master_data = temp_ip + ":" + temp_port
-        adapter_dict["adapters"].append({"slice_part_id":slice_name,"adapter_name":agent_name,"port":6661}) 
+        for k in adapter_dict['adapters']:
+            # print(k)
+            if k['slice_id'] == json_content['slice-id']:
+                k['parts'].append({"slice_part_id":slice_name,"adapter_name":agent_name,"port":str(port)})
+        # adapter_dict["adapters"].append({"slice_part_id":slice_name,"adapter_name":agent_name,"port":str(port)})
 
         # print(json.dumps(adapter_dict, indent=2))
 
-        requests.post("http://0.0.0.0:" + "6661" + "/setIPandPort", data = master_data) 
+        # requests.post("http://0.0.0.0:" + str(port) + "/setIPandPort", data = master_data)
         print("The Adapter", agent_name, "has started")
+
+# adapter_dict["adapters"].append(})
 
 @app.route('/')
 def default_options():
@@ -76,7 +89,7 @@ def list_adapters():
     print(json.dumps(adapter_dict, indent=2))
     return 'OK'
 
-@app.route('/startManagementAdapter', methods = ['POST'])
+@app.route('/startManagement', methods = ['POST'])
 def start_monitoring():
     #print(request.headers)
     file_name = request.data.decode('utf-8')
@@ -92,6 +105,29 @@ def start_monitoring():
     # start_slice_aggregator(slice_id)
     start_slice_adapter(json_content)
     return 'OK'
+
+@app.route('/createService', methods = ['POST']) 
+def create_service():
+    # ler arquivo de parametro
+    file_name = request.data.decode('utf-8')
+    file = open(file_name, "r")
+    yaml_content = file.read()
+    file.close()
+
+    # carrega o YAML e "parseia" pra Json 
+    data = yaml.safe_load(yaml_content)
+    json_content = json.dumps(data)
+    json_content = json.loads(json_content)
+
+    for adapter_iterator in adapter_dict['adapters']:
+      if adapter_iterator['slice_id'] == json_content['slice_id']:
+          for slice_part_it in adapter_iterator['parts']:
+              if slice_part_it['slice_part_id'] == json_content['slice_part_id']:
+                  resp = requests.post("http://0.0.0.0:" + slice_part_it['port'] + "/createService", data = request.data)
+                  # parsed = json.loads(resp.content)
+                  # print(json.dumps(parsed, indent=2))
+                  return 'OK'
+    return 'Adapter not found'
 
 @app.route('/stopManagementAdapter')
 def stop_monitoring():
