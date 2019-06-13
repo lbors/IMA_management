@@ -32,10 +32,12 @@ def create_service():
     json_content = json.loads(json_content)
 
     for service_id in json_content['service_info']:
-        resp = requests.post("http://" + master_ip + ":" + str(master_port) + "/api/v1/namespaces/" + json_content['namespace'] 
-                            + "/services/", data = json.dumps(service_id))
-        print(str(resp.status_code) + "\n")
+        print("http://" + master_ip + ":" + str(master_port) + "/api/v1/namespaces/" + json_content['namespace']  + "/services/")
+        # resp = requests.post("http://" + master_ip + ":" + str(master_port) + "/api/v1/namespaces/" + json_content['namespace'] 
+        #                     + "/services/", data = json.dumps(service_id))
+        # print(str(resp.status_code) + "\n")
     return 'OK'
+
 
 @app.route('/listPods', methods = ['GET']) 
 def list_pods_default():

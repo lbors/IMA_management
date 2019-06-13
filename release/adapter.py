@@ -129,6 +129,8 @@ def create_service():
     json_content = json.loads(json_content)
 
     for service_id in json_content['service_info']:
+        print("REQUISICAO = http://" + master_ip + ":" + str(master_port) + "/api/v1/namespaces/" + json_content['namespace'] 
+                            + "/services/", data = json.dumps(service_id))
         resp = requests.post("http://" + master_ip + ":" + str(master_port) + "/api/v1/namespaces/" + json_content['namespace'] 
                             + "/services/", data = json.dumps(service_id))
         print(str(resp.status_code) + "\n")
