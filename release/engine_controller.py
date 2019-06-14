@@ -55,6 +55,29 @@ adapter_dict = {"adapters":[]}
 #     # resp = requests.get("http://" + master_ip + ":" + str(port) + "/api/v1/namespaces/" + data['namespace'] + "/pods/")
 #     return 'Adapter not found'
 
+def save_dict():
+    #filename = ""
+    write_file = open("global_dict.json", 'w')
+    json.dump(adapter_dict, write_file)
+    write_file.close() 
+
+@app.before_first_request
+def load_dict():
+    global adapter_dict
+
+    try:
+        file = open("global_dict.json", "r")
+        data = file.read()
+        file.close()
+        adapter_dict = json.loads(data)
+    except FileNotFoundError:
+        print ('File "global_dict.json" does not exist. Resuming execution.')   
+    except AttributeError: 
+        print ('File "global_dict.json" is not a valid Json file. Resuming execution with a empty dict.')  
+
+
+
+
 @app.route('/createService', methods = ['POST']) 
 def create_service():
     # ler arquivo de parametro
@@ -159,6 +182,7 @@ def start_management():
 
     start_slice_adapter(json_content)
     list_adapters()
+    save_dict()
     return '200'
 
 

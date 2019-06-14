@@ -123,14 +123,10 @@ def create_service():
       if adapter_iterator['slice_id'] == json_content['slice_id']:
           for slice_part_it in adapter_iterator['parts']:
               if slice_part_it['slice_part_id'] == json_content['slice_part_id']:
-<<<<<<< HEAD
                   resp = requests.post("http://0.0.0.0:" + slice_part_it['port'] + "/createService", data = json_content)
-=======
-                  resp = requests.post("http://0.0.0.0:" + slice_part_it['port'] + "/createService", data = request.data)
->>>>>>> 4b54a2c243c4568b8df6a7971b37711310f153ca
                   # parsed = json.loads(resp.content)
                   # print(json.dumps(parsed, indent=2))
-                  return 'OK'
+                  return 'OK' 
     return 'Adapter not found'
 
 @app.route('/stopManagementAdapter')
