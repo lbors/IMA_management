@@ -114,7 +114,7 @@ def create_service():
     yaml_content = file.read()
     file.close()
 
-    # carrega o YAML e "parseia" pra Json 
+    # carrega o YAML e "parseia" pra Json  
     data = yaml.safe_load(yaml_content)
     json_content = json.dumps(data)
     json_content = json.loads(json_content)
@@ -123,10 +123,10 @@ def create_service():
       if adapter_iterator['slice_id'] == json_content['slice_id']:
           for slice_part_it in adapter_iterator['parts']:
               if slice_part_it['slice_part_id'] == json_content['slice_part_id']:
-                  resp = requests.post("http://0.0.0.0:" + slice_part_it['port'] + "/createService", data = json_content)
+                  resp = requests.post("http://0.0.0.0:" + str(6661) + "/createService", data = str(json_content))
                   # parsed = json.loads(resp.content)
                   # print(json.dumps(parsed, indent=2))
-                  return 'OK' 
+                  return 'OK'
     return 'Adapter not found'
 
 @app.route('/stopManagementAdapter')

@@ -95,7 +95,7 @@ def create_service():
       if adapter_iterator['slice_id'] == json_content['slice_id']:
           for slice_part_it in adapter_iterator['parts']:
               if slice_part_it['slice_part_id'] == json_content['slice_part_id']:
-                  resp = requests.post("http://0.0.0.0:" + slice_part_it['port'] + "/createService", data = json_content)
+                  resp = requests.post("http://0.0.0.0:" + slice_part_it['port'] + "/createService", data = str(json_content))
                   # parsed = json.loads(resp.content)
                   # print(json.dumps(parsed, indent=2))
                   return 'OK'

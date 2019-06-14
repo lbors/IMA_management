@@ -2,7 +2,7 @@
 slice_id: Telemarketing
 slice_part_id: slice-part-test-01
 namespace: espaco-testes
-pod_info: 
+pod_info:
   - pod: 
     apiVersion: v1
     kind: Pod
