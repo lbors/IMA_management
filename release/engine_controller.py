@@ -13,29 +13,26 @@ adapter_dict = {"adapters":[]}
 # port_server = 8080
 # master_ip = '192.168.1.151'
 
-# @app.route('/createPod', methods = ['POST']) 
-# def create_pod():
-#     # ler arquivo de parametro
-#     file_name = request.data.decode('utf-8')
-#     file = open(file_name, "r")
-#     yaml_content = file.read()
-#     file.close()
+@app.route('/deleteService', methods = ['POST']) 
+def delete_service():
+    # ler arquivo de parametro
+    file_name = request.data.decode('utf-8')
+    file = open(file_name, "r")
+    yaml_content = file.read()
+    file.close()
 
-#     # carrega o YAML, "parseia" pra Json 
-#     data = yaml.load(yaml_content)
-#     json_content = json.dumps(data)
-#     json_content = json.loads(json_content)
+    # carrega o YAML e "parseia" pra Json  
+    data = yaml.safe_load(yaml_content)
+    json_content = json.dumps(data)
+    json_content = json.loads(json_content)
 
-#     for adapter_iterator in adapter_dict['adapters']:
-#         if adapter_iterator['slice_id'] == json_content['slice_id']:
-#             for slice_part_it in adapter_iterator['parts']:
-#                 if slice_part_it['slice_part_id'] == json_content['slice_part_id']:
-#                     resp = requests.post("http://0.0.0.0:" + slice_part_it['port'] + "/createPod", data = request.data)
-#                     parsed = json.loads(resp.content)
-#                     # print(json.dumps(parsed, indent=2))
-#                     return 'OK'
-#     return 'Adapter not found'
-
+    for adapter_iterator in adapter_dict['adapters']:
+      if adapter_iterator['slice_id'] == json_content['slice_id']:
+          for slice_part_it in adapter_iterator['parts']:
+              if slice_part_it['slice_part_id'] == json_content['slice_part_id']:
+                  resp = requests.post("http://0.0.0.0:" + slice_part_it['port'] + "/deleteService", data = json.dumps(json_content))
+                  return 'OK'
+    return 'Adapter not found'
 
 # slice_id, slice_part_id e namespace sao passados como argumentos
 # @app.route('/listPods', methods = ['POST']) 
@@ -141,8 +138,6 @@ def start_slice_adapter(json_content):
         requests.post("http://0.0.0.0:" + str(port) + "/setIPandPort", data = master_data)
         print("The Adapter", agent_name, "has started")
 
-# adapter_dict["adapters"].append(})
-
 
 @app.route('/')
 def default_options():
@@ -233,4 +228,4 @@ if __name__ == '__main__':
 
 #TODO
 #- perguntar sobre retorno (a resposta eu que configuro? tem como voltar tanto uma resposta como um numero)
-#- salva adapter no fim da execucao
+#- fazer arquivo global_dict ficar invisivel ao usuario (e read only???)
