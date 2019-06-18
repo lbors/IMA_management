@@ -95,7 +95,7 @@ def create_service():
                   resp = requests.post("http://0.0.0.0:" + slice_part_it['port'] + "/createService", data = str(json_content))
                   # parsed = json.loads(resp.content)
                   # print(json.dumps(parsed, indent=2))
-                  return 'OK'
+                  return str(resp.status_code)
     return 'Adapter not found'
 
 def start_slice_adapter(json_content):
@@ -147,6 +147,23 @@ def default_options():
 def list_adapters():
     print(json.dumps(adapter_dict, indent=2))
     return 'OK'
+    
+# @app.route('/updateManagement', methods = ['POST'])
+# def stop_management():
+#     post_data = request.data.decode('utf-8') # exemplo de entrada: "Telefonica"
+#     for adapter_iterator in adapter_dict['adapters']:
+#         if adapter_iterator['slice_id'] == post_data:
+#             for slice_part_it in adapter_iterator['parts']:
+#                 client = docker.from_env()
+#                 container = client.containers.get(slice_part_it['adapter_name'])
+#                 container.stop()
+#                 container.remove()
+#                 del slice_part_it 
+#             adapter_dict['adapters'].remove(adapter_iterator)
+#             print('The slice ' + post_data + ' has been deleted.')
+#             return '200'
+#     print('Adapter not found')
+#     return '400'
 
 @app.route('/stopSlicePart', methods = ['POST'])
 def delete_adapter():
@@ -199,23 +216,6 @@ def stop_management():
     print('Adapter not found')
     return '400'
 
-# @app.route('/updateManagement', methods = ['POST'])
-# def stop_management():
-#     post_data = request.data.decode('utf-8') # exemplo de entrada: "Telefonica"
-
-#     for adapter_iterator in adapter_dict['adapters']:
-#         if adapter_iterator['slice_id'] == post_data:
-#             for slice_part_it in adapter_iterator['parts']:
-#                 client = docker.from_env()
-#                 container = client.containers.get(slice_part_it['adapter_name'])
-#                 container.stop()
-#                 container.remove()
-#                 del slice_part_it 
-#             adapter_dict['adapters'].remove(adapter_iterator)
-#             print('The slice ' + post_data + ' has been deleted.')
-#             return '200'
-#     print('Adapter not found')
-#     return '400'
 
 def stop_ma():
     return 'Stopping the Resource and VM Management infrastructure'
@@ -229,3 +229,9 @@ if __name__ == '__main__':
 #TODO
 #- perguntar sobre retorno (a resposta eu que configuro? tem como voltar tanto uma resposta como um numero)
 #- fazer arquivo global_dict ficar invisivel ao usuario (e read only???)
+#- mudar chamadas de file-name pra file-content
+
+#TESTS
+#- verificar se podemos escolher pra qual worker o serviço vai
+#- testar /createService em dois VIMs (2 workers, 2 masters diferentes)
+#- começar update (orientado á tecnologia)

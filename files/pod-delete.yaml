@@ -1,13 +1,19 @@
 ---
+slice_id: Telemarketing
 slice_part_id: slice-part-test-01
-podInfo:
-    pod_creation: 
-      - pod: 
-          namespace: espaco-testes
-          name: nginx
-      - pod: 
-          namespace: espaco-testes
-          name: enginex
-      - pod: 
-          namespace: default
-          name: memory-demo
+namespace: espaco-testes
+service_info:
+  - service:  
+    apiVersion: v1
+    kind: Service
+    metadata:
+      name: example-service
+      labels:
+        app: example-service
+    spec:
+      ports:
+      - port: 80
+        targetPort: 4000
+      type: NodePort
+      selector:
+    app: example-pod

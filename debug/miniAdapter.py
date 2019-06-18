@@ -4,10 +4,11 @@ import yaml
 import requests
 import docker
 import json
+import time
 
 app = Flask(__name__)
 master_port = 8080
-master_ip = '1.1.1.1'
+master_ip = '192.168.1.151'
 
 @app.route('/setIPandPort', methods = ['POST'])
 def set_IP():
@@ -35,12 +36,12 @@ def create_service():
     # print("data pos parse: \n")
     # json_content.dumps()
     for service_id in json_content['service_info']:
-        # print(service_id)
+        time.sleep(3)
         print("REQUISICAO = http://" + master_ip + ":" + str(master_port) + "/api/v1/namespaces/" + json_content['namespace'] 
                             + "/services/")
-        # resp = requests.post("http://" + master_ip + ":" + str(master_port) + "/api/v1/namespaces/" + json_content['namespace'] 
-        #                     + "/services/", data = json.dumps(service_id))
-        print(str(resp.status_code) + "\n")
+        resp = requests.post("http://" + master_ip + ":" + str(master_port) + "/api/v1/namespaces/" + json_content['namespace'] 
+                            + "/services/", data = json.dumps(service_id))
+        print(str(resp.headers) + "\n")
     return 'OK'
 
 
