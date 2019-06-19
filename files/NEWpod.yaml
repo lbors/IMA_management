@@ -3,91 +3,43 @@ slice_id: Telemarketing
 slice_parts:
   - s:
     slice_part_id: slice-part-test-01
-    namespace: espaco-testes
-    pod_info:
-      - pod: 
-        apiVersion: v1
-        kind: Pod
-        metadata:
-          namespace: espaco-testes
-          name: nginx
-          labels:
-            name: nginx
-        spec:
-          containers:
-          - name: nginx
-            image: nginx
-            ports:
-              - containerPort: 443
-            volumeMounts:
-              - mountPath: "/etc/nginx/"
-                name: "nginx-conf"
-              - mountPath: "/usr/local/etc/nginx/ssl"
-                name: "ssl-certs"
-          volumes:
-            - name: "nginx-conf"
-              secret:
-                secretName: "nginx.conf"
-            - name: "ssl-certs"
-              secret:
-                secretName: "nginx-ssl-certs"
+    namespace: necos
     service_info:
       - service:  
-        apiVersion: v1
-        kind: Service
-        metadata:
-          name: example-service
-          labels:
-            app: example-service
-        spec:
-          ports:
-          - port: 80
-            targetPort: 4000
-          type: NodePort
-          selector:
-        app: example-pod
+          apiVersion: v1
+          kind: Service
+          metadata:
+            name: nginx1
+            labels:
+              app: nginx1
+          spec:
+            selector:
+              app: nginx1
+            ports:
+            - port: 80
+              name: http
+              targetPort: 80
+            - port: 443
+              name: https
+              targetPort: 80
   - s:
     slice_part_id: slice-part-test-02
-    namespace: espaco-testes
-    pod_info:
-      - pod: 
-        apiVersion: v1
-        kind: Pod
-        metadata:
-          namespace: espaco-testes
-          name: nginx
-          labels:
-            name: nginx
-        spec:
-          containers:
-          - name: nginx
-            image: nginx
-            ports:
-              - containerPort: 443
-            volumeMounts:
-              - mountPath: "/etc/nginx/"
-                name: "nginx-conf"
-              - mountPath: "/usr/local/etc/nginx/ssl"
-                name: "ssl-certs"
-          volumes:
-            - name: "nginx-conf"
-              secret:
-                secretName: "nginx.conf"
-            - name: "ssl-certs"
-              secret:
-                secretName: "nginx-ssl-certs"
+    namespace: leris
     service_info:
       - service:  
-        apiVersion: v1
-        kind: Service
-        metadata:
-          name: example-service
-          labels:
-            app: example-service
-        spec:
-          ports:
-          - port: 80
-            targetPort: 4000
-          type: NodePort
-          selector:
-        app: example-pod
+          apiVersion: v1
+          kind: Service
+          metadata:
+            name: nginx2
+            labels:
+              app: nginx2
+          spec:
+            selector:
+              app: nginx2
+            ports:
+            - port: 80
+              name: http
+              targetPort: 80
+            - port: 443
+              name: https
+              targetPort: 80
