@@ -1,1 +1,1 @@
-{"adapters": [{"slice_id": "Telemarketing", "parts": [{"slice_part_id": "slice-part-01", "adapter_name": "slice-part-01_Telefonica1_agent", "port": "46543"}, {"slice_part_id": "slice-part-02", "adapter_name": "slice-part-02_Telefonica2_agent", "port": "38577"}]}]}
+{"Telemarketing": {"slice-part-02": {"adapter_name": "slice-part-02_Telefonica2_agent", "port": "47473"}}}

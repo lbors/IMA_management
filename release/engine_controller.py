@@ -9,7 +9,7 @@ import time
 from subprocess import call 
 
 app = Flask(__name__)
-adapter_dict = {"adapters":[]}
+adapter_dict = {}
 
 @app.route('/deleteService', methods = ['POST']) 
 def delete_service():
@@ -43,19 +43,19 @@ def load_dict_NEW():
     d = {i['slice_id']: {j['slice_part_id']: ({'adapter_name': j['adapter_name'], 'port': j['port']}) for j in i['parts']} for i in json.loads(jstring)['adapters']}
     return d
 
-@app.before_first_request
-def load_dict():
-    global adapter_dict
+# @app.before_first_request
+# def load_dict():
+#     global adapter_dict
 
-    try:
-        file = open("global_dict.json", "r")
-        data = file.read()
-        file.close()
-        adapter_dict = json.loads(data)
-    except FileNotFoundError:
-        print ('File "global_dict.json" does not exist. Resuming execution.')   
-    except AttributeError: 
-        print ('File "global_dict.json" is not a valid Json file. Resuming execution with a empty dict.')  
+#     try:
+#         file = open("global_dict.json", "r")
+#         data = file.read()
+#         file.close()
+#         adapter_dict = json.loads(data)
+#     except FileNotFoundError:
+#         print ('File "global_dict.json" does not exist. Resuming execution.')   
+#     except AttributeError: 
+#         print ('File "global_dict.json" is not a valid Json file. Resuming execution with a empty dict.')  
 
 @app.route('/createService', methods = ['POST']) 
 def create_service():
@@ -84,9 +84,12 @@ def start_slice_adapter(json_content):
     global adapter_dict
     
     #Start container for the IMA Agents/Adapters
-    adapter_dict["adapters"].append({"slice_id":json_content['slice-id'],"parts":[]})
+    # if "Telemarketing" in adapter_dict:
+    # if json_content['slice-id'] in adapter_dict:
+    #     a = 2
+    # else:
+    adapter_dict.update({json_content['slice-id'] : 'foo'})
     # no json_content, a variavel slice-id eh escrita com '-' (simbolo de subtracao), porem no adapter_dict usaremos '_' (underline)
-    
     for i in json_content['dc-slice-part']:
         slice_name = i['name']
         slice_user = i['user']
@@ -103,17 +106,20 @@ def start_slice_adapter(json_content):
                 temp_ip = str(j['dc-vdu']['ip-address']) # identifica o mestre e salva o ip nessa string
                 temp_port = str(j['dc-vdu']['port'])
 
-        client = docker.from_env()
-        client.containers.run("agentwill:latest", detach=True, name=agent_name, ports={'1010/tcp': ('localhost', port)})
-        print("http://0.0.0.0:" + str(port) + "/setIPandPort")
-        time.sleep(3)
+        # client = docker.from_env()
+        # client.containers.run("agentwill:latest", detach=True, name=agent_name, ports={'1010/tcp': ('localhost', port)})
+        # print("http://0.0.0.0:" + str(port) + "/setIPandPort")
+        # time.sleep(3)
         master_data = temp_ip + ":" + temp_port
-        for k in adapter_dict['adapters']:
-            if k['slice_id'] == json_content['slice-id']:
-                k['parts'].append({"slice_part_id":slice_name,"adapter_name":agent_name,"port":str(port)})
-        # adapter_dict["adapters"].append({"slice_part_id":slice_name,"adapter_name":agent_name,"port":str(port)})
+        adapter_dict.update({
+            json_content['slice-id']: {
+                slice_name: ({
+                    "adapter_name":agent_name, "port":str(port)
+                })
+            }
+        })
 
-        requests.post("http://0.0.0.0:" + str(port) + "/setIPandPort", data = master_data)
+        # requests.post("http://0.0.0.0:" + str(port) + "/setIPandPort", data = master_data)
         print("The Adapter", agent_name, "has started")
 
 
