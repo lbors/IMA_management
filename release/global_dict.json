@@ -1,1 +1,1 @@
-{"Telemarketing": {"slice-part-02": {"adapter_name": "slice-part-02_Telefonica2_agent", "port": "47473"}}}
+{"Telemarketing": {"slice-part-01": {"adapter_name": "slice-part-01_Telefonica1_agent", "port": "41145"}, "slice-part-02": {"adapter_name": "slice-part-02_Telefonica2_agent", "port": "55319"}, "slice-part-update-test": {"adapter_name": "slice-part-update-test_EmpresaX_agent", "port": "32905"}}}
