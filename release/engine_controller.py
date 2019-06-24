@@ -55,10 +55,10 @@ def start_slice_adapter(json_content):
                 temp_ip = str(j['dc-vdu']['ip-address']) # identifica o mestre e salva o ip nessa string
                 temp_port = str(j['dc-vdu']['port'])
 
-        # client = docker.from_env()
-        # client.containers.run("agentwill:latest", detach=True, name=agent_name, ports={'1010/tcp': ('localhost', port)})
-        # print("http://0.0.0.0:" + str(port) + "/setIPandPort")
-        # time.sleep(3)
+        client = docker.from_env()
+        client.containers.run("agentwill:latest", detach=True, name=agent_name, ports={'1010/tcp': ('localhost', port)})
+        print("http://0.0.0.0:" + str(port) + "/setIPandPort")
+        time.sleep(3)
         master_data = temp_ip + ":" + temp_port
 
         if json_content['slice-id'] in adapter_dict:
@@ -76,7 +76,7 @@ def start_slice_adapter(json_content):
                 }
             })
 
-        # requests.post("http://0.0.0.0:" + str(port) + "/setIPandPort", data = master_data)
+        requests.post("http://0.0.0.0:" + str(port) + "/setIPandPort", data = master_data)
         print("The Adapter", agent_name, "has started")
 
 @app.route('/')
@@ -110,6 +110,7 @@ def update_management():
         container.stop()
         container.remove()
         adapter_dict[json_content['slice-id']].pop(json_content['slice-part-id'])
+        save_dict()
     else: 
         return 'Error: The yaml sent has a invalid flag.'
     return 'OK'
@@ -140,6 +141,7 @@ def stop_management():
         container.remove()
     adapter_dict.pop(post_data)
     print('The slice ' + post_data + ' has been deleted.')
+    save_dict()
     return '200'
     # print('Adapter not found')
     # return '400'
@@ -163,7 +165,7 @@ def create_service():
     json_content = json.dumps(data)
     json_content = json.loads(json_content)
 
-    adapter_port = adapter_dict[json_content['slice_id']][json_content['slice_part_id']['port']]
+    adapter_port = adapter_dict[json_content['slice_id']][json_content['slice_part_id']]['port']
     resp = requests.post("http://0.0.0.0:" + str(adapter_port) + "/createService", data = str(json_content))
     # parsed = json.loads(resp.content)
     # print(json.dumps(parsed, indent=2))
@@ -183,9 +185,36 @@ def delete_service():
     json_content = json.dumps(data)
     json_content = json.loads(json_content)
 
-    adapter_port = adapter_dict[json_content['slice_id']][json_content['slice_part_id']['port']]
+    adapter_port = adapter_dict[json_content['slice_id']][json_content['slice_part_id']]['port']
     resp = requests.post("http://0.0.0.0:" + str(adapter_port) + "/deleteService", data = json.dumps(json_content))
     return 'OK'
+    # return 'Adapter not found'
+
+@app.route('/updateService', methods = ['POST']) 
+def update_service():
+    # ler arquivo de parametro
+    file_name = request.data.decode('utf-8')
+    file = open(file_name, "r")
+    yaml_content = file.read()
+    file.close()
+
+    # carrega o YAML e "parseia" pra Json  
+    data = yaml.safe_load(yaml_content)
+    json_content = json.dumps(data)
+    json_content = json.loads(json_content)
+
+    adapter_port = adapter_dict[json_content['slice_id']][json_content['slice_part_id']]['port']
+
+    if json_content['flag'] == "replica":
+        update = "replica"
+    elif json_content['flag'] == "delete":  
+        update = "delete"
+    else: 
+        return 'Error: The yaml sent has a invalid flag.'
+    return 'OK'
+
+    resp = requests.post("http://0.0.0.0:" + str(adapter_port) + "/updateService", data = str(json_content))
+    return str(resp.status_code)
     # return 'Adapter not found'
 
 if __name__ == '__main__':
@@ -199,16 +228,8 @@ if __name__ == '__main__':
 #- perguntar sobre retorno (a resposta eu que configuro? tem como voltar tanto uma resposta como um numero)
 #- fazer arquivo global_dict ficar invisivel ao usuario (e read only???) [CONTRA: se fizer isso e deletar o adapter no portainer, programa morre]
 #- mudar chamadas de file-name pra file-content
-#- começar update (orientado á tecnologia)
+#- avançar update
 
 #TESTS
 #- verificar se podemos escolher pra qual worker o serviço vai
 #- testar /createService em dois VIMs (2 workers, 2 masters diferentes)
-
-""" jstring = ''.join(open('example_dict.json', 'r').readlines())
-aqui vc le o json como string
-d = {i['slice_id']: {j['slice_part_id']: (j['adapter_name'], j['port']) for j in i['parts']} for i in json.loads(jstring)['adapters']}
-aqui vc le e constrói como um dict
-
-aí é só acessar assim: d['Claro']['slice-02']
-eu não sei o que vai ser chave na sua busca, mas aí é só mudar no código (posso explicar melhor como, se vc quiser) """
