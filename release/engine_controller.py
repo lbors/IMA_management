@@ -165,11 +165,15 @@ def create_service():
     json_content = json.dumps(data)
     json_content = json.loads(json_content)
 
-    adapter_port = adapter_dict[json_content['slice_id']][json_content['slice_part_id']]['port']
-    resp = requests.post("http://0.0.0.0:" + str(adapter_port) + "/createService", data = str(json_content))
+    for service_it in json_content['slice_parts']:
+        # pra cada slice_part do yaml vai adicionar N servicos, mas em apenas UM namespace
+        adapter_port = adapter_dict[json_content['slice_id']][service_it['slice_part_id']]['port']
+        # print(json.dumps(service_it, indent=2))
+        resp = requests.post("http://0.0.0.0:" + str(adapter_port) + "/createService", data = json.dumps(service_it))
+        
     # parsed = json.loads(resp.content)
     # print(json.dumps(parsed, indent=2))
-    return str(resp.status_code)
+    return str(resp.content)
     # return 'Adapter not found'
 
 @app.route('/deleteService', methods = ['POST']) 

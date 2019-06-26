@@ -3,17 +3,20 @@ slice_id: Telemarketing
 slice_part_id: slice-part-test-01
 namespace: espaco-testes
 service_info:
-  - service:  
-    apiVersion: v1
-    kind: Service
-    metadata:
-      name: example-service
-      labels:
-        app: example-service
-    spec:
-      ports:
-      - port: 80
-        targetPort: 4000
-      type: NodePort
-      selector:
-    app: example-pod
+      - service:  
+        apiVersion: v1
+        kind: Service
+        metadata:
+          name: nginx
+          labels:
+            app: nginx
+        spec:
+          selector:
+            app: nginx
+          ports:
+          - port: 80
+            name: http
+            targetPort: 80
+          - port: 443
+            name: https
+            targetPort: 80

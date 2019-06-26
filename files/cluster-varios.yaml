@@ -10,7 +10,7 @@ dc-slice-part:
             - dc-vdu: # data-center
                 name: master-01
                 ip-address: 200.136.191.32
-                port: 8080
+                port: 8080 
                 description: master de um worker 
                 template_name: kube-template
                 type: master
