@@ -211,8 +211,8 @@ def update_service():
 
     if json_content['flag'] == "replica":
         update = "replica"
-    elif json_content['flag'] == "delete":  
-        update = "delete"
+    elif json_content['flag'] == "redeploy":  
+        update = "redeploy"
     else: 
         return 'Error: The yaml sent has a invalid flag.'
     return 'OK'

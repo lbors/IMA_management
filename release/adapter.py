@@ -133,6 +133,7 @@ def create_service():
         time.sleep(3)
         resp = requests.post("http://" + master_ip + ":" + str(master_port) + "/api/v1/namespaces/" + json_content['namespace'] 
                             + "/services/", data = json.dumps(service_id))
+        # ler o resp e fazer uma lista de objetos
         print(str(resp.status_code) + "\n")
     return 'OK'
 
