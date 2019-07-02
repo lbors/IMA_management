@@ -41,3 +41,40 @@ comandos uteis:
 sudo docker run -d -p 9000:9000 -v /var/run/docker.sock:/var/run/docker.sock -v portainer_data:/data portainer/portainer
 sudo docker build -t agentwill .  
 production
+
+curl -X POST \
+  http://0.0.0.0:5001/startManagement \
+  -H 'Content-Type: application/yaml' \
+  -H 'Postman-Token: 4c83cb0c-9407-476d-9b33-f86169521cc7' \
+  -H 'cache-control: no-cache' \
+  -d '---
+slice-id: Telemarketing
+dc-slice-part:
+    -   slice-part:
+        name: slice-part-test-01
+        user: Telefonicas
+        VIM: # VIM information
+            VIM_Type_name: "Kubernetes"
+        vdus: # Virtual Deployment Unit
+            - dc-vdu: # data-center
+                name: master-test-01
+                ip-address: 200.18.102.80
+                port: 8080
+                description: load balancer for elastic CDN deployment 
+                template_name: kube-template
+                type: master
+            - dc-vdu:
+                name: worker-test-01
+                ip-address: 10.10.10.71
+                port: 8080
+                description: load balancer for elastic CDN deployment 
+                template_name: kube-template
+                type: worker
+            - dc-vdu:
+                name: worker-test-02
+                ip-address: 10.10.10.72
+                port: 8080
+                description: load balancer for elastic CDN deployment 
+                template_name: kube-template
+                type: worker
+'

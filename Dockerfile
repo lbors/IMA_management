@@ -3,10 +3,6 @@ RUN \
 	apt update && \
 	apt -y upgrade && \
     apt -y install python3-pip && \
-    apt -y install iperf3 && \
-    apt -y install iperf && \
-    apt -y install stress && \
-    apt -y install stress-ng && \
     apt -y install git && \
     apt -y install vim && \
     git clone https://github.com/williamgdo/IMA_management.git && \
