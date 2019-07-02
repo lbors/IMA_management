@@ -56,7 +56,7 @@ def start_slice_adapter(json_content):
                 temp_port = str(j['dc-vdu']['port'])
 
         client = docker.from_env()
-        client.containers.run("agentwill:latest", detach=True, name=agent_name, ports={'1010/tcp': ('localhost', port)})
+        client.containers.run("adapterk8s:latest", detach=True, name=agent_name, ports={'1010/tcp': ('localhost', port)})
         print("http://0.0.0.0:" + str(port) + "/setIPandPort")
         time.sleep(3)
         master_data = temp_ip + ":" + temp_port
