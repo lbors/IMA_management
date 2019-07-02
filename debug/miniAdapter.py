@@ -8,7 +8,7 @@ import time
 
 app = Flask(__name__)
 master_port = 8080
-master_ip = '192.168.1.151'
+master_ip = '200.18.102.80'
 
 @app.route('/setIPandPort', methods = ['POST'])
 def set_IP():

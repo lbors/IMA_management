@@ -29,7 +29,7 @@ curl --header "Content-Type: */yaml" \'
 
 curl --request POST --data 'adapter0' --header "Content-Type: */*" http://0.0.0.0:5001/listPods
 
-
+200.18.102.80
 
 curl --request GET http://0.0.0.0:5001/
 curl --request GET http://0.0.0.0:5001/listAdapters

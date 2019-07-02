@@ -85,25 +85,20 @@ def default_options():
 
 @app.route('/listAdapters', methods = ['GET'])
 def list_adapters():
-    print(json.dumps(adapter_dict, indent=2))
-    return 'OK'
+    # print(json.dumps(adapter_dict, indent=2))
+    return str(json.dumps(adapter_dict, indent=2))
     
 @app.route('/updateManagement', methods = ['POST'])
 def update_management():
-    # ler arquivo de parametro
-    file_name = request.data.decode('utf-8')
-    file = open(file_name, "r")
-    yaml_content = file.read()
-    file.close()
-
     # carrega o YAML e "parseia" pra Json  
-    data = yaml.safe_load(yaml_content)
+    data = yaml.safe_load(request.data.decode('utf-8'))
     json_content = json.dumps(data)
     json_content = json.loads(json_content)
 
     if json_content['flag'] == "append":
         start_slice_adapter(json_content)
         save_dict()
+        return str(json.dumps(adapter_dict, indent=2))
     elif json_content['flag'] == "delete":  
         client = docker.from_env()
         container = client.containers.get(str(json_content['slice-part-id']))
@@ -111,24 +106,20 @@ def update_management():
         container.remove()
         adapter_dict[json_content['slice-id']].pop(json_content['slice-part-id'])
         save_dict()
+        return str(json.dumps(adapter_dict, indent=2))
     else: 
         return 'Error: The yaml sent has a invalid flag.'
-    return 'OK'
+    
 
 @app.route('/startManagement', methods = ['POST'])
 def start_management():
-    file_name = request.data.decode('utf-8')  # 
-    file = open(file_name, "r")
-    yaml_content = file.read()
-    file.close()
-
-    json_content = json.dumps(yaml.safe_load(yaml_content))
+    json_content = json.dumps(yaml.safe_load(request.data.decode('utf-8')))
     json_content = json.loads(json_content)
 
     start_slice_adapter(json_content)
-    list_adapters()
+    # list_adapters()
     save_dict()
-    return '200'
+    return str(json.dumps(adapter_dict, indent=2))
 
 @app.route('/stopManagement', methods = ['POST'])
 def stop_management():
@@ -140,70 +131,47 @@ def stop_management():
         container.stop()
         container.remove()
     adapter_dict.pop(post_data)
-    print('The slice ' + post_data + ' has been deleted.')
     save_dict()
-    return '200'
-    # print('Adapter not found')
-    # return '400'
-
-# def stop_ma():
-#     return 'Stopping the Resource and VM Management infrastructure'
-
+    return str('The slice ' + post_data + ' has been deleted.')
 
 # SERVICES ########################################################################
 
-@app.route('/createService', methods = ['POST']) 
+@app.route('/deployService', methods = ['POST']) 
 def create_service():
-    # ler arquivo de parametro
-    file_name = request.data.decode('utf-8')
-    file = open(file_name, "r")
-    yaml_content = file.read()
-    file.close()
-
     # carrega o YAML e "parseia" pra Json  
-    data = yaml.safe_load(yaml_content)
+    data = yaml.safe_load(request.data.decode('utf-8'))
     json_content = json.dumps(data)
     json_content = json.loads(json_content)
+    services_status = []
 
     for service_it in json_content['slice_parts']:
         # pra cada slice_part do yaml vai adicionar N servicos, mas em apenas UM namespace
         adapter_port = adapter_dict[json_content['slice_id']][service_it['slice_part_id']]['port']
-        # print(json.dumps(service_it, indent=2))
         resp = requests.post("http://0.0.0.0:" + str(adapter_port) + "/createService", data = json.dumps(service_it))
-        
-    # parsed = json.loads(resp.content)
-    # print(json.dumps(parsed, indent=2))
-    return str(resp.content)
-    # return 'Adapter not found'
+        parsed_resp = resp.content.decode('utf-8')
+        services_status.append(parsed_resp)
+    return ('\n'.join(services_status))
 
 @app.route('/deleteService', methods = ['POST']) 
 def delete_service():
-    # ler arquivo de parametro
-    file_name = request.data.decode('utf-8')
-    file = open(file_name, "r")
-    yaml_content = file.read()
-    file.close()
-
-    # carrega o YAML e "parseia" pra Json  
-    data = yaml.safe_load(yaml_content)
+    # carrega o body do POST e "parseia" pra Json  
+    data = yaml.safe_load(request.data.decode('utf-8'))
     json_content = json.dumps(data)
     json_content = json.loads(json_content)
+    services_status = []
 
-    adapter_port = adapter_dict[json_content['slice_id']][json_content['slice_part_id']]['port']
-    resp = requests.post("http://0.0.0.0:" + str(adapter_port) + "/deleteService", data = json.dumps(json_content))
-    return 'OK'
-    # return 'Adapter not found'
+    for service_it in json_content['slice_parts']:
+        # pra cada slice_part do yaml vai adicionar N servicos, mas em apenas UM namespace
+        adapter_port = adapter_dict[json_content['slice_id']][service_it['slice_part_id']]['port']
+        resp = requests.post("http://0.0.0.0:" + str(adapter_port) + "/deleteService", data = json.dumps(service_it))
+        parsed_resp = resp.content.decode('utf-8')
+        services_status.append(parsed_resp)
+    return ('\n'.join(services_status))
 
 @app.route('/updateService', methods = ['POST']) 
 def update_service():
-    # ler arquivo de parametro
-    file_name = request.data.decode('utf-8')
-    file = open(file_name, "r")
-    yaml_content = file.read()
-    file.close()
-
-    # carrega o YAML e "parseia" pra Json  
-    data = yaml.safe_load(yaml_content)
+    # carrega o body do POST e "parseia" pra Json  
+    data = yaml.safe_load(request.data.decode('utf-8'))
     json_content = json.dumps(data)
     json_content = json.loads(json_content)
 
@@ -219,14 +187,9 @@ def update_service():
 
     resp = requests.post("http://0.0.0.0:" + str(adapter_port) + "/updateService", data = str(json_content))
     return str(resp.status_code)
-    # return 'Adapter not found'
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port='5001')
-
-
-#PERGUNTAR
-#- stopSlicePart precisa existir?
 
 #TODO
 #- perguntar sobre retorno (a resposta eu que configuro? tem como voltar tanto uma resposta como um numero)

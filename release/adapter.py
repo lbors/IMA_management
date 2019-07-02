@@ -129,13 +129,22 @@ def create_service():
     json_content = json.dumps(data)
     json_content = json.loads(json_content)
 
+    service_info = []
+
     for service_id in json_content['service_info']:
         time.sleep(3)
         resp = requests.post("http://" + master_ip + ":" + str(master_port) + "/api/v1/namespaces/" + json_content['namespace'] 
                             + "/services/", data = json.dumps(service_id))
-        # ler o resp e fazer uma lista de objetos
-        print(str(resp.status_code) + "\n")
-    return 'OK'
+        r = json.loads(resp.content.decode('utf-8'))
+        if r["status"] == "Failure":
+            try:
+                obj = "Service " + service_id['metadata']['name'] + " could not be initialized. Error " + str(r["code"]) + ": " + r["message"]
+            except Exception as e:
+                obj = "A nameless service could not be initialized. Error " + str(r["code"]) + ": " + r["message"]
+        else:
+            obj = "Service " + service_id['metadata']['name'] + " initialized successfully."
+        service_info.append(obj)
+    return str(service_info)
 
 @app.route('/getService', methods = ['POST'])
 def get_service():
@@ -164,13 +173,22 @@ def delete_service():
     json_content = json.dumps(data)
     json_content = json.loads(json_content)
 
+    service_info = []
+
     for service_id in json_content['service_info']:
+        time.sleep(3)
         resp = requests.delete("http://" + master_ip + ":" + str(master_port) + "/api/v1/namespaces/" + json_content['namespace'] 
                             + "/services/" + service_id['metadata']['name'])
-        print(str(resp.status_code) + "\n")
-
-    return 'OK'
-
+        r = json.loads(resp.content.decode('utf-8'))
+        if r["status"] == "Failure":
+            try:
+                obj = "Service " + service_id['metadata']['name'] + " could not be deleted. Error " + str(r["code"]) + ": " + r["message"]
+            except Exception as e:
+                obj = "A nameless service could not be deleted. Error " + str(r["code"]) + ": " + r["message"]
+        else:
+            obj = "Service " + service_id['metadata']['name'] + " deleted successfully."
+        service_info.append(obj)
+    return str(service_info)
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port='1010')

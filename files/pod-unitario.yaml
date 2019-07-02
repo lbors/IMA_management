@@ -3,7 +3,7 @@ slice_id: Telemarketing
 slice_parts:
   - s:
     slice_part_id: slice-part-test-01
-    namespace: espaco-testes
+    namespace: default
     service_info:
       - service:  
         apiVersion: v1

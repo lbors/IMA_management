@@ -88,12 +88,12 @@ def list_adapters():
 
 @app.route('/startManagement', methods = ['POST'])
 def start_management():
-    file_name = request.data.decode('utf-8')  # 
-    file = open(file_name, "r")
-    yaml_content = file.read()
-    file.close()
+    # file_name = request.data.decode('utf-8')  # 
+    # file = open(file_name, "r")
+    # yaml_content = file.read()
+    # file.close()
 
-    json_content = json.dumps(yaml.safe_load(yaml_content))
+    json_content = json.dumps(yaml.safe_load(request.data.decode('utf-8')))
     json_content = json.loads(json_content)
 
     start_slice_adapter(json_content)
@@ -104,13 +104,13 @@ def start_management():
 @app.route('/createService', methods = ['POST']) 
 def create_service():
     # ler arquivo de parametro
-    file_name = request.data.decode('utf-8')
-    file = open(file_name, "r")
-    yaml_content = file.read()
-    file.close()
+    # file_name = request.data.decode('utf-8')
+    # file = open(file_name, "r")
+    # yaml_content = file.read()
+    # file.close()
 
     # carrega o YAML e "parseia" pra Json  
-    data = yaml.safe_load(yaml_content)
+    data = yaml.safe_load(request.data.decode('utf-8'))
     json_content = json.dumps(data)
     json_content = json.loads(json_content)
 

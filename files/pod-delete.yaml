@@ -1,8 +1,10 @@
 ---
 slice_id: Telemarketing
-slice_part_id: slice-part-test-01
-namespace: espaco-testes
-service_info:
+slice_parts:
+  - s:
+    slice_part_id: slice-part-test-01
+    namespace: default
+    service_info:
       - service:  
         apiVersion: v1
         kind: Service
