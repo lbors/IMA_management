@@ -79,6 +79,53 @@ def start_slice_adapter(json_content):
         requests.post("http://0.0.0.0:" + str(port) + "/setIPandPort", data = master_data)
         print("The Adapter", agent_name, "has started")
 
+def start_slice_adapter_ssh(json_content):
+    global adapter_dict
+
+    for i in json_content['dc-slice-part']:
+        if i['VIM']['VIM_Type_access'] == 'SSH':
+            slice_name = i['name']
+            slice_user = i['user']
+            agent_name = slice_name + '_' + slice_user + '_agent_ssh'
+            ssh_ip = i['VIM']['IP']
+            ssh_port = i['VIM']['port']
+            ssh_user = i['VIM']['user']
+            ssh_pass = i['VIM']['password']
+            master_ip = i['vdus'][0]['dc-vdu']['ip-address']
+
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.bind(('localhost', 0))
+            port = s.getsockname()[1]
+            s.close()
+
+            client = docker.from_env()
+            client.containers.run("adapter_ssh:latest", detach=True, name=agent_name, ports={'1010/tcp': ('localhost', port)})
+            print("http://0.0.0.0:" + str(port) + "/setIPandPort")
+            time.sleep(3)
+            master_data = ssh_ip + ":" + ssh_port + ":" + ssh_user + ":" + ssh_pass + ":" + port + ":" + master_ip
+
+            if json_content['slice-id'] in adapter_dict:
+                adapter_dict[json_content['slice-id']].update({ 
+                    slice_name: ({
+                        "adapter_name":agent_name, "adapter_port":str(port), "ssh_ip":str(ssh_ip), "ssh_port":str(ssh_port), "ssh_user":str(ssh_user), "ssh_pass":str(ssh_pass), "master_ip":str(master_ip)
+                    })
+                })
+            else:
+                adapter_dict.update({
+                json_content['slice-id']: {
+                    slice_name: ({
+                        "adapter_name":agent_name, "adapter_port":str(port), "ssh_ip":str(ssh_ip), "ssh_port":str(ssh_port), "ssh_user":str(ssh_user), "ssh_pass":str(ssh_pass), "master_ip":str(master_ip)
+                    })
+                }
+            })
+
+            requests.post("http://0.0.0.0:" + str(port) + "/setSSH", data = master_data)
+            print("The Adapter", agent_name, "has started")
+
+
+
+
+
 @app.route('/')
 def default_options():
     return 'Welcome to Resource and VM Management of IMA!'
@@ -117,6 +164,7 @@ def start_management():
     json_content = json.loads(json_content)
 
     start_slice_adapter(json_content)
+    start_slice_adapter_ssh(json_content)
     # list_adapters()
     save_dict()
     return str(json.dumps(adapter_dict, indent=2))

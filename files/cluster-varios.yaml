@@ -6,6 +6,12 @@ dc-slice-part:
         user: Telefonica1
         VIM: # VIM information
             VIM_Type_name: "Kubernetes"
+            VIM_Type_access: "SSH"
+            IP: "Slice Part Entrypoint IP"
+            port: "Slice Part SSH Port or API Port"
+            user: "SSH user"
+            password: "SSH password"
+
         vdus: # Virtual Deployment Unit
             - dc-vdu: # data-center
                 name: master-01
@@ -26,6 +32,12 @@ dc-slice-part:
         user: Telefonica2
         VIM: # VIM information
             VIM_Type_name: "Kubernetes"
+            VIM_Type_access: "SSH"
+            IP: "Slice Part Entrypoint IP"
+            port: "Slice Part SSH Port or API Port"
+            user: "SSH user"
+            password: "SSH password"
+
         vdus: # Virtual Deployment Unit
             - dc-vdu: # data-center
                 name: master-02
