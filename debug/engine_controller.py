@@ -36,6 +36,34 @@ adapter_dict_simulado = {
 # port_server = 8080
 # master_ip = '192.168.1.151'
 
+adapter_dict = {}
+
+def save_dict():
+    #filename = ""
+    write_file = open("global_dict.json", 'w')
+    json.dump(adapter_dict, write_file)
+    write_file.close() 
+
+""" @app.before_first_request
+def load_dict():
+    global adapter_dict
+    try:
+        file = open("global_dict.json", "r")
+        data = file.read()
+        file.close()
+        adapter_dict = json.loads(data)
+    except FileNotFoundError:
+        print ('File "global_dict.json" does not exist. Resuming execution.')   
+    except AttributeError: 
+        print ('File "global_dict.json" is not a valid Json file. Resuming execution with a empty dict.')  
+ """
+
+def reset_dict():
+    global adapter_dict
+    adapter_dict = {}
+    save_dict()
+
+
 def start_slice_adapter(json_content):
     global adapter_dict
 
@@ -75,7 +103,46 @@ def start_slice_adapter(json_content):
                 }
             })
         # requests.post("http://0.0.0.0:" + str(port) + "/setIPandPort", data = master_data)
+        requests.post("http://0.0.0.0:" + "6661" + "/setIPandPort", data = master_data)
         print("The Adapter", agent_name, "has started")
+
+def start_slice_adapter_ssh(json_content):
+    global adapter_dict
+
+    for i in json_content['dc-slice-part']:
+        if i['VIM']['VIM_Type_access'] == 'SSH':
+            slice_name = i['name']
+            slice_user = i['user']
+            agent_name = slice_name + '_' + slice_user + '_agent_ssh'
+            ssh_ip = i['VIM']['IP']
+            ssh_port = i['VIM']['port']
+            ssh_user = i['VIM']['user']
+            ssh_pass = i['VIM']['password']
+            master_ip = i['vdus'][0]['dc-vdu']['ip-address']
+
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.bind(('localhost', 0))
+            port = s.getsockname()[1]
+            s.close()
+
+            # client = docker.from_env()
+            # client.containers.run("adapter_ssh:latest", detach=True, name=agent_name, ports={'1010/tcp': ('localhost', port)})
+            print("http://0.0.0.0:" + str(port) + "/setSSH")
+            # time.sleep(3)
+            master_data = ssh_ip + ":" + ssh_port + ":" + ssh_user + ":" + ssh_pass + ":" + str(port) + ":" + master_ip
+
+            adapter_dict[json_content['slice-id']][slice_name]['adapter_ssh_name'] = agent_name
+            adapter_dict[json_content['slice-id']][slice_name]['adapter_ssh_port'] = str(port)
+            adapter_dict[json_content['slice-id']][slice_name]['ssh_ip'] = str(ssh_ip)
+            adapter_dict[json_content['slice-id']][slice_name]['ssh_port'] = str(ssh_port)
+            adapter_dict[json_content['slice-id']][slice_name]['ssh_user'] = str(ssh_user)
+            adapter_dict[json_content['slice-id']][slice_name]['ssh_pass'] = str(ssh_pass)
+            adapter_dict[json_content['slice-id']][slice_name]['master_ip'] = str(master_ip)
+          
+            # requests.post("http://0.0.0.0:" + str(port) + "/setSSH", data = master_data)
+            requests.post("http://0.0.0.0:" + "1010" + "/setSSH", data = master_data)
+            print("The Adapter", agent_name, "has started")
+
 
 @app.route('/')
 def default_options():
@@ -88,40 +155,40 @@ def list_adapters():
 
 @app.route('/startManagement', methods = ['POST'])
 def start_management():
-    # file_name = request.data.decode('utf-8')  # 
-    # file = open(file_name, "r")
-    # yaml_content = file.read()
-    # file.close()
-
     json_content = json.dumps(yaml.safe_load(request.data.decode('utf-8')))
     json_content = json.loads(json_content)
 
     start_slice_adapter(json_content)
-    list_adapters()
-    # save_dict()
-    return '200'
+    print("START: ///////////////////////////////////////////////////////qqq")
+    print(json.dumps(adapter_dict, indent=2))
+    start_slice_adapter_ssh(json_content)
+    print("START SSH: ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ")
+    print(json.dumps(adapter_dict, indent=2))
+    save_dict()
+    return str(json.dumps(adapter_dict, indent=2))
 
-@app.route('/createService', methods = ['POST']) 
+@app.route('/deployService', methods = ['POST']) 
 def create_service():
-    # ler arquivo de parametro
-    # file_name = request.data.decode('utf-8')
-    # file = open(file_name, "r")
-    # yaml_content = file.read()
-    # file.close()
-
     # carrega o YAML e "parseia" pra Json  
     data = yaml.safe_load(request.data.decode('utf-8'))
     json_content = json.dumps(data)
     json_content = json.loads(json_content)
-
     services_status = []
 
-    for service_it in json_content['slice_parts']:
-        adapter_port = adapter_dict_simulado[json_content['slice_id']][service_it['slice_part_id']]['port']
-        resp = requests.post("http://0.0.0.0:" + "6661" + "/createService", data = json.dumps(service_it))
-        parsed_resp = resp.content.decode('utf-8')
-        services_status.append(parsed_resp)
-    return ('\n'.join(services_status))
+    slice_id = json_content['slices']['id']
+    for slices_iterator in json_content['slices']['slice-parts']:
+        # pra cada slice_part do yaml vai adicionar N servicos, mas em apenas UM namespace
+        adapter_port = adapter_dict[slice_id][str(slices_iterator['name'])]['adapter_ssh_port']
+
+        print("slices_iterator:" + str(slices_iterator)) 
+        for service_it in slices_iterator['vdus']:
+            print("service_it:" + str(service_it)) 
+            # resp = requests.post("http://0.0.0.0:" + str(adapter_port) + "/createService", data = json.dumps(service_it['commands']))
+            resp = requests.post("http://0.0.0.0:" + "1010" + "/createService", data = json.dumps(service_it['commands']))
+        # parsed_resp = resp.content.decode('utf-8')
+        # services_status.append(parsed_resp)
+    # return ('\n'.join(services_status))
+    return 'OK'
 
 @app.route('/stopManagementAdapter')
 def stop_monitoring():

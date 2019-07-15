@@ -54,13 +54,11 @@ def start_slice_adapter(json_content):
             if str(j['dc-vdu']['type']) == "master":
                 temp_ip = str(j['dc-vdu']['ip-address']) # identifica o mestre e salva o ip nessa string
                 temp_port = str(j['dc-vdu']['port'])
-
         client = docker.from_env()
-        client.containers.run("adapterk8s:latest", detach=True, name=agent_name, ports={'1010/tcp': ('localhost', port)})
+        client.containers.run("agentwill:latest", detach=True, name=agent_name, ports={'1010/tcp': ('localhost', port)})
         print("http://0.0.0.0:" + str(port) + "/setIPandPort")
         time.sleep(3)
         master_data = temp_ip + ":" + temp_port
-
         if json_content['slice-id'] in adapter_dict:
             adapter_dict[json_content['slice-id']].update({ 
                     slice_name: ({
@@ -75,9 +73,9 @@ def start_slice_adapter(json_content):
                     })
                 }
             })
-
         requests.post("http://0.0.0.0:" + str(port) + "/setIPandPort", data = master_data)
         print("The Adapter", agent_name, "has started")
+
 
 def start_slice_adapter_ssh(json_content):
     global adapter_dict
@@ -100,31 +98,20 @@ def start_slice_adapter_ssh(json_content):
 
             client = docker.from_env()
             client.containers.run("adapter_ssh:latest", detach=True, name=agent_name, ports={'1010/tcp': ('localhost', port)})
-            print("http://0.0.0.0:" + str(port) + "/setIPandPort")
+            print("http://0.0.0.0:" + str(port) + "/setSSH")
             time.sleep(3)
-            master_data = ssh_ip + ":" + ssh_port + ":" + ssh_user + ":" + ssh_pass + ":" + port + ":" + master_ip
+            master_data = ssh_ip + ":" + ssh_port + ":" + ssh_user + ":" + ssh_pass + ":" + str(port) + ":" + master_ip
 
-            if json_content['slice-id'] in adapter_dict:
-                adapter_dict[json_content['slice-id']].update({ 
-                    slice_name: ({
-                        "adapter_name":agent_name, "adapter_port":str(port), "ssh_ip":str(ssh_ip), "ssh_port":str(ssh_port), "ssh_user":str(ssh_user), "ssh_pass":str(ssh_pass), "master_ip":str(master_ip)
-                    })
-                })
-            else:
-                adapter_dict.update({
-                json_content['slice-id']: {
-                    slice_name: ({
-                        "adapter_name":agent_name, "adapter_port":str(port), "ssh_ip":str(ssh_ip), "ssh_port":str(ssh_port), "ssh_user":str(ssh_user), "ssh_pass":str(ssh_pass), "master_ip":str(master_ip)
-                    })
-                }
-            })
-
+            adapter_dict[json_content['slice-id']][slice_name]['adapter_ssh_name'] = agent_name
+            adapter_dict[json_content['slice-id']][slice_name]['adapter_ssh_port'] = str(port)
+            adapter_dict[json_content['slice-id']][slice_name]['ssh_ip'] = str(ssh_ip)
+            adapter_dict[json_content['slice-id']][slice_name]['ssh_port'] = str(ssh_port)
+            adapter_dict[json_content['slice-id']][slice_name]['ssh_user'] = str(ssh_user)
+            adapter_dict[json_content['slice-id']][slice_name]['ssh_pass'] = str(ssh_pass)
+            adapter_dict[json_content['slice-id']][slice_name]['master_ip'] = str(master_ip)
+          
             requests.post("http://0.0.0.0:" + str(port) + "/setSSH", data = master_data)
             print("The Adapter", agent_name, "has started")
-
-
-
-
 
 @app.route('/')
 def default_options():
@@ -192,13 +179,17 @@ def create_service():
     json_content = json.loads(json_content)
     services_status = []
 
-    for service_it in json_content['slice_parts']:
+    slice_id = json_content['slices']['id']
+    for slices_iterator in json_content['slices']['slice-parts']:
         # pra cada slice_part do yaml vai adicionar N servicos, mas em apenas UM namespace
-        adapter_port = adapter_dict[json_content['slice_id']][service_it['slice_part_id']]['port']
-        resp = requests.post("http://0.0.0.0:" + str(adapter_port) + "/createService", data = json.dumps(service_it))
-        parsed_resp = resp.content.decode('utf-8')
-        services_status.append(parsed_resp)
-    return ('\n'.join(services_status))
+        adapter_port = adapter_dict[slice_id][str(slices_iterator['name'])]['adapter_ssh_port']
+
+        for service_it in slices_iterator['vdus']:
+            resp = requests.post("http://0.0.0.0:" + str(adapter_port) + "/createService", data = json.dumps(service_it['commands']))
+        # parsed_resp = resp.content.decode('utf-8')
+        # services_status.append(parsed_resp)
+    # return ('\n'.join(services_status))
+    return 'OK'
 
 @app.route('/deleteService', methods = ['POST']) 
 def delete_service():

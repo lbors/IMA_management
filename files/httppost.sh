@@ -118,3 +118,89 @@ curl -X POST \
 comandos uteis:
 sudo docker run -d -p 9000:9000 -v /var/run/docker.sock:/var/run/docker.sock -v portainer_data:/data portainer/portainer
 sudo docker build -t adapterk8s .  
+
+
+
+# CURL para crir um cluster local
+curl -X POST \
+  http://0.0.0.0:5001/startManagement \
+  -H 'Content-Type: application/yaml' \
+  -H 'Postman-Token: 4c83cb0c-9407-476d-9b33-f86169521cc7' \
+  -H 'cache-control: no-cache' \
+  -d '---
+slice-id: Telemarketing
+dc-slice-part:
+    -   slice-part:
+        name: slice-part-01
+        user: Telefonica1
+        VIM: # VIM information
+            VIM_Type_name: "Kubernetes"
+            VIM_Type_access: "SSH"
+            IP: "127.0.0.1"
+            port: "22"
+            user: "user"
+            password: "senha"
+
+        vdus: # Virtual Deployment Unit
+            - dc-vdu: # data-center
+                name: master-01
+                ip-address: localhost
+                port: 22 
+                description: master de um worker 
+                template_name: kube-template
+                type: master
+            - dc-vdu:
+                name: worker-01
+                ip-address: 200.136.191.26
+                port: 8080
+                description: worker com nginx 
+                template_name: kube-template
+                type: worker
+    -   slice-part:
+        name: slice-part-02
+        user: Telefonica2
+        VIM: # VIM information
+            VIM_Type_name: "Kubernetes"
+            VIM_Type_access: "SSH"
+            IP: "Slice Part Entrypoint IP"
+            port: "Slice Part SSH Port or API Port"
+            user: "SSH user"
+            password: "SSH password"
+
+        vdus: # Virtual Deployment Unit
+            - dc-vdu: # data-center
+                name: master-02
+                ip-address: 200.136.191.89
+                port: 8080
+                description: master de um worker 
+                template_name: kube-template
+                type: master
+            - dc-vdu:
+                name: worker-02
+                ip-address: 200.136.191.108
+                port: 8080
+                description: worker com nginx 2
+                template_name: kube-template
+                type: worker'
+
+# CURL para rodar comandos de teste
+curl -X POST \
+  http://localhost:5001/deployService \
+  -H 'Content-Type: application/yaml' \
+  -H 'Postman-Token: 4e084f32-0677-4301-92d5-4262851d0d05' \
+  -H 'cache-control: no-cache' \
+  -d '---
+slices:
+    id: Telemarketing
+    slice-parts:     
+        -   dc-slice-part:
+            name: slice-part-01
+            vdus:
+                -   name: master-01
+                    VIM: Kubernetes
+                    commands: 
+                    - echo "Alo Mundo 1!"
+                    - echo "Alo Mundo 2!"
+                    - echo "Alo Mundo 3!"
+                    - echo "Alo Mundo 4!"
+                    - echo "Alo Mundo 5!"'

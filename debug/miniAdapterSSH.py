@@ -17,12 +17,15 @@ ssh_pass = 'a'
 def set_SSH():
     global ssh_port, ssh_ip, ssh_user, ssh_pass, master_ip
     post_data = request.data.decode('utf-8')
+    print("setando os dados: " + post_data)
     post_data = post_data.split(':')
     ssh_ip = post_data[0]
     ssh_port = post_data[1]
     ssh_user = post_data[2]
     ssh_pass = post_data[3]
     master_ip = post_data[5]
+
+
 
     return 'OK'
 
@@ -38,6 +41,7 @@ def create_service():
     data = yaml.safe_load(yaml_content)
     json_content = json.dumps(data)
     json_content = json.loads(json_content)
+    print(json_content)
 
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -50,12 +54,10 @@ def create_service():
 @app.route('/getService', methods = ['POST'])
 def get_service():
     return "OK"
-    
-
 
 @app.route('/deleteService', methods = ['POST']) 
-def delete_service():
+def delete_service(): 
     return "OK"
-    
+
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port='1010')
