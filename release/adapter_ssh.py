@@ -48,12 +48,12 @@ def create_service():
     for commands in json_content: 
         print(commands)
         ssh.connect(ssh_ip,ssh_port,ssh_user,ssh_pass)
-        stdin, stdout, stderr = ssh.exec_command("ls")
+        stdin, stdout, stderr = ssh.exec_command(commands)
 
         if stderr.channel.recv_exit_status() != 0:
             print(stderr.read())
         else:
-            print(stdout.read()) 
+            print(stdout.read().decode('utf-8')) 
 
     return "OK"
 

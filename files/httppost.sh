@@ -247,10 +247,10 @@ dc-slice-part:
         VIM: # VIM information
             VIM_Type_name: "Kubernetes"
             VIM_Type_access: "SSH"
-            IP: "Slice Part Entrypoint IP"
-            port: "Slice Part SSH Port or API Port"
-            user: "SSH user"
-            password: "SSH password"
+            IP: 200.18.102.60
+            port: 22
+            user: debeltrami
+            password: openstack
 
         vdus: # Virtual Deployment Unit
             - dc-vdu: # data-center

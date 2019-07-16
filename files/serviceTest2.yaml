@@ -13,3 +13,14 @@ slices:
                         - echo "Alo Mundo 3!"
                         - echo "Alo Mundo 4!"
                         - echo "Alo Mundo 5!"
+        -   dc-slice-part:
+            name: slice-part-02
+            vdus:
+                -   name: master-01
+                    VIM: Kubernetes
+                    commands: 
+                        - echo "Alo Mundo 1!"
+                        - echo "Alo Mundo 2!"
+                        - echo "Alo Mundo 3!"
+                        - echo "Alo Mundo 4!"
+                        - echo "Alo Mundo 5!"
