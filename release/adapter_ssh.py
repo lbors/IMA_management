@@ -8,10 +8,10 @@ import paramiko
 import time
 
 app = Flask(__name__)
-ssh_port = 5000
-ssh_ip = '1.1.1.1'
-ssh_user = 'a'
-ssh_pass = 'a'
+ssh_port = 22
+ssh_ip = '200.18.102.60'
+ssh_user = 'debeltrami'
+ssh_pass = 'openstack'
 
 @app.route('/setSSH', methods = ['POST'])
 def set_SSH():
@@ -43,14 +43,17 @@ def create_service():
 
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    
+    # Terminar este For !
+    for commands in json_content: 
+        print(commands)
+        ssh.connect(ssh_ip,ssh_port,ssh_user,ssh_pass)
+        stdin, stdout, stderr = ssh.exec_command("ls")
 
-    ssh.connect(ssh_ip,ssh_port,ssh_user,ssh_pass)
-    stdin, stdout, stderr = ssh.exec_command("ls")
-
-    if stderr.channel.recv_exit_status() != 0:
-        print(stderr.read())
-    else:
-        print(stdout.read())
+        if stderr.channel.recv_exit_status() != 0:
+            print(stderr.read())
+        else:
+            print(stdout.read()) 
 
     return "OK"
 
