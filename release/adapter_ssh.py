@@ -32,18 +32,25 @@ def default_options():
 
 @app.route('/createService', methods = ['POST'])
 def create_service():
+    global ssh_port, ssh_ip, ssh_user, ssh_pass, master_ip
     yaml_content = request.data.decode('utf-8')
 
     # carrega o YAML, "parseia" pra Json 
     data = yaml.safe_load(yaml_content)
     json_content = json.dumps(data)
     json_content = json.loads(json_content)
+    print(json_content)
 
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
     ssh.connect(ssh_ip,ssh_port,ssh_user,ssh_pass)
-    stdin, stdout, stderr = ssh.exec_command("ps aux")
+    stdin, stdout, stderr = ssh.exec_command("ls")
+
+    if stderr.channel.recv_exit_status() != 0:
+        print(stderr.read())
+    else:
+        print(stdout.read())
 
     return "OK"
 

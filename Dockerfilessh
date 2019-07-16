@@ -12,6 +12,7 @@ RUN \
     pip3 install flask && \
     pip3 install flask_request_params && \
     pip3 install pyyaml && \
+    pip3 install paramiko && \
     apt install net-tools && \
     pip3 install docker && \
     apt -y install iputils-ping && \
@@ -19,4 +20,4 @@ RUN \
     git checkout ssh && \
     git pull
 
-ENTRYPOINT python3.6 IMA_management/release/adapter.py >> adapter.log
+ENTRYPOINT python3.6 IMA_management/release/adapter_ssh.py >> adapter.log

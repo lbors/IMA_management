@@ -204,3 +204,66 @@ slices:
                     - echo "Alo Mundo 3!"
                     - echo "Alo Mundo 4!"
                     - echo "Alo Mundo 5!"'
+
+
+# inicia o management v2
+curl -X POST \
+  http://0.0.0.0:5001/startManagement \
+  -H 'Content-Type: application/yaml' \
+  -H 'Postman-Token: 4c83cb0c-9407-476d-9b33-f86169521cc7' \
+  -H 'cache-control: no-cache' \
+  -d '---
+slice-id: Telemarketing
+dc-slice-part:
+    -   slice-part:
+        name: slice-part-01
+        user: Telefonica1
+        VIM: # VIM information
+            VIM_Type_name: "Kubernetes"
+            VIM_Type_access: "SSH"
+            IP: 200.18.102.60
+            port: 22
+            user: debeltrami
+            password: openstack
+
+        vdus: # Virtual Deployment Unit
+            - dc-vdu: # data-center
+                name: master-01
+                ip-address: 200.136.191.32
+                port: 8080 
+                description: master de um worker 
+                template_name: kube-template
+                type: master
+            - dc-vdu:
+                name: worker-01
+                ip-address: 200.136.191.26
+                port: 8080
+                description: worker com nginx 
+                template_name: kube-template
+                type: worker
+    -   slice-part:
+        name: slice-part-02
+        user: Telefonica2
+        VIM: # VIM information
+            VIM_Type_name: "Kubernetes"
+            VIM_Type_access: "SSH"
+            IP: "Slice Part Entrypoint IP"
+            port: "Slice Part SSH Port or API Port"
+            user: "SSH user"
+            password: "SSH password"
+
+        vdus: # Virtual Deployment Unit
+            - dc-vdu: # data-center
+                name: master-02
+                ip-address: 200.136.191.89
+                port: 8080
+                description: master de um worker 
+                template_name: kube-template
+                type: master
+            - dc-vdu:
+                name: worker-02
+                ip-address: 200.136.191.108
+                port: 8080
+                description: worker com nginx 2
+                template_name: kube-template
+                type: worker'

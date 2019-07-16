@@ -100,7 +100,7 @@ def start_slice_adapter_ssh(json_content):
             client.containers.run("adapter_ssh:latest", detach=True, name=agent_name, ports={'1010/tcp': ('localhost', port)})
             print("http://0.0.0.0:" + str(port) + "/setSSH")
             time.sleep(3)
-            master_data = ssh_ip + ":" + ssh_port + ":" + ssh_user + ":" + ssh_pass + ":" + str(port) + ":" + master_ip
+            master_data = ssh_ip + ":" + str(ssh_port) + ":" + ssh_user + ":" + ssh_pass + ":" + str(port) + ":" + master_ip
 
             adapter_dict[json_content['slice-id']][slice_name]['adapter_ssh_name'] = agent_name
             adapter_dict[json_content['slice-id']][slice_name]['adapter_ssh_port'] = str(port)
