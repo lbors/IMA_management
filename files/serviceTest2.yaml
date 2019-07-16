@@ -9,7 +9,7 @@ slices:
                     VIM: Kubernetes
                     commands: 
                         - echo "Alo Mundo 1!"
-                        - echo "Alo Mundo 2!"
+                        - export coreip=<master_ip>
                         - echo "Alo Mundo 3!"
                         - echo "Alo Mundo 4!"
                         - echo "Alo Mundo 5!"

@@ -12,7 +12,7 @@ ssh_port = 22
 ssh_ip = '200.18.102.60'
 ssh_user = 'debeltrami'
 ssh_pass = 'openstack'
-
+master_ip = '200.18.102.60'
 @app.route('/setSSH', methods = ['POST'])
 def set_SSH():
     global ssh_port, ssh_ip, ssh_user, ssh_pass, master_ip
@@ -43,15 +43,19 @@ def create_service():
 
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    
+    ssh.connect(hostname=ssh_ip,port=ssh_port,username=ssh_user,password=ssh_pass)
     # Terminar este For !
     for commands in json_content: 
         print(commands)
-        ssh.connect(ssh_ip,ssh_port,ssh_user,ssh_pass)
+        
+        if commands == 'export coreip=':
+            commands = commands + master_ip
+            print("Test " + str(commands))
+
         stdin, stdout, stderr = ssh.exec_command(commands)
 
         if stderr.channel.recv_exit_status() != 0:
-            print(stderr.read())
+            print(stderr.read()) 
         else:
             print(stdout.read().decode('utf-8')) 
 

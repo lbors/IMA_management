@@ -15,11 +15,11 @@ slices:
                      password: <X>
                      master-ip: <X>
                      commands: 
-                        - "git clone https://github.com/LABORA-INF-UFG/NECOS-ansible-dojot-core.git"
-                        - "pip install -r NECOS-ansible-dojot-core/requirements.txt"
-                        - "export coreip=IP ADDRESS OF THE CORE MASTER NODE"
-                        - "sed -i "s/REPLACE/$coreip/" NECOS-ansible-dojot-core/inventories/example_local/group_vars/dojot-k8s/dojot.yaml"
-                        - "ansible-playbook -K -k -i NECOS-ansible-dojot-core/inventories/example_local/deploy.yaml"
+                        - git clone https://github.com/LABORA-INF-UFG/NECOS-ansible-dojot-core.git
+                        - pip install -r NECOS-ansible-dojot-core/requirements.txt
+                        - export coreip=ass
+                        - sed -i "s/REPLACE/$coreip/" NECOS-ansible-dojot-core/inventories/example_local/group_vars/dojot-k8s/dojot.yaml
+                        - ansible-playbook -K -k -i NECOS-ansible-dojot-core/inventories/example_local/deploy.yaml
          - dc-slice-part:
              name: dc-slice2
              vdus:
