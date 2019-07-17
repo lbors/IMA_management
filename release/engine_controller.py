@@ -179,39 +179,20 @@ def create_service():
     json_content = json.loads(json_content)
     services_status = []
 
-    slice_id = json_content['slices']['id']
-    for slices_iterator in json_content['slices']['slice-parts']:
+    slice_id = json_content['slices']['sliced']['id']
+    for slices_iterator in json_content['slices']['sliced']['slice-parts']:
         # pra cada slice_part do yaml vai adicionar N servicos, mas em apenas UM namespace
+        print(str(slices_iterator))
         adapter_port = adapter_dict[slice_id][str(slices_iterator['name'])]['adapter_ssh_port']
 
         for service_it in slices_iterator['vdus']:
             resp = requests.post("http://0.0.0.0:" + str(adapter_port) + "/createService", data = json.dumps(service_it['commands']))
             print(str(service_it['commands']))
-        # parsed_resp = resp.content.decode('utf-8')
-        # services_status.append(parsed_resp)
-    # return ('\n'.join(services_status))
+            # parsed_resp = resp.content.decode('utf-8')
+            # services_status.append(parsed_resp)
+            
+    # return "Commands outputs = " + ('\n'.join(services_status))
     return 'OK'
-
-@app.route('/deployServicev2', methods = ['POST']) 
-def create_servicev2(): 
-    # carrega o YAML e "parseia" pra Json  
-    data = yaml.safe_load(request.data.decode('utf-8'))
-    json_content = json.dumps(data)
-    json_content = json.loads(json_content)
-    services_status = []
-
-    slice_id = json_content['slices']['id']
-    for slices_iterator in json_content['slices']['slice-parts']:
-        # pra cada slice_part do yaml vai adicionar N servicos, mas em apenas UM namespace
-        adapter_port = adapter_dict[slice_id][str(slices_iterator['name'])]['adapter_ssh_port']
-
-        for service_it in slices_iterator['vdus']:
-            resp = requests.post("http://0.0.0.0:" + str(adapter_port) + "/createService", data = json.dumps(service_it['commands']))
-        # parsed_resp = resp.content.decode('utf-8')
-        # services_status.append(parsed_resp)
-    # return ('\n'.join(services_status))
-    return 'OK'
-
 
 @app.route('/deleteService', methods = ['POST']) 
 def delete_service():
