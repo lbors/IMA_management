@@ -204,7 +204,7 @@ slices:
                     - ls
                     - ls
                     - cd ima-management && ls
-                    - pip install -r NECOS-ansible-dojot-core/requirements.txt
+                    - pip install -r NECOS-ansible-dojot-core/requirements.txt'
 
 
 # inicia o management v2
@@ -270,4 +270,27 @@ dc-slice-part:
                 type: worker'
 
 
-curl -X POST http://localhost:1010/createService -d '['echo "Alo Mundo 1!"', 'git clone https://github.com/LABORA-INF-UFG/NECOS-ansible-dojot-core.git', 'ls', 'ls', 'cd ima-management && ls']'
+curl -X POST http://localhost:1010/createService -d b'["echo \\"Alo Mundo 1!\\"", "echo \\"Alo Mundo 2!\\"", "echo \\"Alo Mundo 3!\\"", "echo \\"Alo Mundo 4!\\"", "echo \\"Alo Mundo 5!\\""]'
+
+b'["echo \\"Alo Mundo 1!\\"", "echo \\"Alo Mundo 2!\\"", "echo \\"Alo Mundo 3!\\"", "echo \\"Alo Mundo 4!\\"", "echo \\"Alo Mundo 5!\\""]'
+
+curl -X POST \
+  http://localhost:5001/deployService \
+  -H 'Content-Type: application/yaml' \
+  -H 'Postman-Token: 4e084f32-0677-4301-92d5-4262851d0d05' \
+  -H 'cache-control: no-cache' \
+  -d '---
+slices:
+   sliced:
+      id: Telemarketing
+      slice-parts:     
+         - dc-slice-part:
+           name: slice-part-01
+           vdus:
+             - vdu:
+               name: master-01
+               VIM: Kubernetes
+               commands: 
+                - echo "Alo Mundo 1!"
+                - sed -i "s/REPLACE/$coreip/" NECOS-ansible-dojot-core/inventories/example_local/group_vars/dojot-k8s/dojot.yaml
+                - echo "Alo Mundo 5!"'

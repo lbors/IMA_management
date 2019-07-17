@@ -9,10 +9,11 @@ import time
 
 app = Flask(__name__)
 ssh_port = 22
-ssh_ip = '200.133.239.39'
+ssh_ip = '200.133.239.3X'
 ssh_user = 'andre'
-ssh_pass = 'openstack'
-master_ip = '200.18.102.60'
+ssh_pass = '???'
+master_ip = '200.18.102.6X'
+
 @app.route('/setSSH', methods = ['POST'])
 def set_SSH():
     global ssh_port, ssh_ip, ssh_user, ssh_pass, master_ip
@@ -46,6 +47,9 @@ def create_service():
 
     for commands in json_content: 
         print(commands)
+
+        if "sed" in commands:
+            commands = commands.replace("REPLACE", master_ip)
         
         channel = ssh.get_transport().open_session()
         channel.get_pty()         # get a PTY

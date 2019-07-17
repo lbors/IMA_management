@@ -186,7 +186,8 @@ def create_service():
         adapter_port = adapter_dict[slice_id][str(slices_iterator['name'])]['adapter_ssh_port']
 
         for service_it in slices_iterator['vdus']:
-            resp = requests.post("http://0.0.0.0:" + str(adapter_port) + "/createService", data = json.dumps(service_it['commands']))
+            # resp = requests.post("http://0.0.0.0:" + str(adapter_port) + "/createService", data = json.dumps(service_it['commands']))
+            resp = requests.post("http://0.0.0.0:" + "1010" + "/createService", data = json.dumps(service_it['commands']))
             print(str(service_it['commands']))
             # parsed_resp = resp.content.decode('utf-8')
             # services_status.append(parsed_resp)
