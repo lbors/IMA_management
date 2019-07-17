@@ -200,10 +200,11 @@ slices:
                     VIM: Kubernetes
                     commands: 
                     - echo "Alo Mundo 1!"
-                    - git clone https://gitlab.com/debeltrami/ima-management.git
+                    - git clone https://github.com/LABORA-INF-UFG/NECOS-ansible-dojot-core.git
                     - ls
                     - ls
                     - cd ima-management && ls
+                    - pip install -r NECOS-ansible-dojot-core/requirements.txt
 
 
 # inicia o management v2
