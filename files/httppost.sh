@@ -200,10 +200,10 @@ slices:
                     VIM: Kubernetes
                     commands: 
                     - echo "Alo Mundo 1!"
-                    - echo "Alo Mundo 2!"
-                    - echo "Alo Mundo 3!"
-                    - echo "Alo Mundo 4!"
-                    - echo "Alo Mundo 5!"'
+                    - git clone https://gitlab.com/debeltrami/ima-management.git
+                    - ls
+                    - ls
+                    - cd ima-management && ls
 
 
 # inicia o management v2
@@ -267,3 +267,6 @@ dc-slice-part:
                 description: worker com nginx 2
                 template_name: kube-template
                 type: worker'
+
+
+curl -X POST http://localhost:1010/createService -d '['echo "Alo Mundo 1!"', 'git clone https://github.com/LABORA-INF-UFG/NECOS-ansible-dojot-core.git', 'ls', 'ls', 'cd ima-management && ls']'

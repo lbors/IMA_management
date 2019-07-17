@@ -9,8 +9,8 @@ import time
 
 app = Flask(__name__)
 ssh_port = 22
-ssh_ip = '200.18.102.60'
-ssh_user = 'debeltrami'
+ssh_ip = '200.133.239.39'
+ssh_user = 'andre'
 ssh_pass = 'openstack'
 master_ip = '200.18.102.60'
 @app.route('/setSSH', methods = ['POST'])
@@ -35,7 +35,6 @@ def create_service():
     global ssh_port, ssh_ip, ssh_user, ssh_pass, master_ip
     yaml_content = request.data.decode('utf-8')
 
-    # carrega o YAML, "parseia" pra Json 
     data = yaml.safe_load(yaml_content)
     json_content = json.dumps(data)
     json_content = json.loads(json_content)
@@ -44,20 +43,27 @@ def create_service():
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     ssh.connect(hostname=ssh_ip,port=ssh_port,username=ssh_user,password=ssh_pass)
-    # Terminar este For !
+
     for commands in json_content: 
         print(commands)
         
         if commands == 'export coreip=':
             commands = commands + master_ip
             print("Test " + str(commands))
+        
+        channel = ssh.get_transport().open_session()
+        channel.get_pty()         # get a PTY
+        channel.invoke_shell()    # start the shell before sending commands
+        channel.send(commands + '\n')
+        time.sleep(5)
+        print(channel.recv(1024))
 
-        stdin, stdout, stderr = ssh.exec_command(commands)
+        #stdin, stdout, stderr = ssh.exec_command(commands)
 
-        if stderr.channel.recv_exit_status() != 0:
-            print(stderr.read()) 
-        else:
-            print(stdout.read().decode('utf-8')) 
+        #if stderr.channel.recv_exit_status() != 0:
+        #    print(stderr.read()) 
+        #else:
+        #    print(stdout.read().decode('utf-8')) 
 
     return "OK"
 
