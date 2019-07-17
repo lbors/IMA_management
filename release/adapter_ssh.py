@@ -47,10 +47,6 @@ def create_service():
     for commands in json_content: 
         print(commands)
         
-        if commands == 'export coreip=':
-            commands = commands + master_ip
-            print("Test " + str(commands))
-        
         channel = ssh.get_transport().open_session()
         channel.get_pty()         # get a PTY
         channel.invoke_shell()    # start the shell before sending commands
