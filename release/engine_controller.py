@@ -38,9 +38,10 @@ def reset_dict():
 def start_slice_adapter(json_content):
     global adapter_dict
 
-    for slice_part in json_content['slice']['slice-parts']: 
-    # precisa percorrer todos slice parts do yaml para iniciar 
-        slice_name = slice_part['name']
+    for i in range(len(json_content['slice']['slice-parts'])): 
+    # precisa percorrer todos slice parts do yaml para iniciar
+        # print(str("slice " + str(i) + " = " + str(json_content['slice']['slice-parts'][i]))) 
+        slice_name = json_content['slice']['slice-parts'][i]['name']
         agent_name = slice_name + '_adapter_api'
 
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -48,9 +49,9 @@ def start_slice_adapter(json_content):
         port = s.getsockname()[1]
         s.close()
         
-        temp_ip = slice_part['VIM']['vim-ref']['ip-api']
-        temp_port = slice_part['VIM']['vim-ref']['port-api']
-        master_data = temp_ip + ":" + temp_port
+        temp_ip = json_content['slice']['slice-parts'][i]['VIM']['vim-ref']['ip-api']
+        temp_port = json_content['slice']['slice-parts'][i]['VIM']['vim-ref']['port-api']
+        master_data = temp_ip + ":" + str(temp_port)
 
         client = docker.from_env()
         client.containers.run("adapterk8s:latest", detach=True, name=agent_name, ports={'1010/tcp': ('localhost', port)})
@@ -67,7 +68,7 @@ def start_slice_adapter(json_content):
                 json_content['slice']['id']: {
                     slice_name: ({
                         "adapter_name":agent_name, "port":str(port)
-                    })
+                    })slice_part
                 }
             })
         # print("http://0.0.0.0:" + str(port) + "/setIPandPort")
@@ -78,15 +79,15 @@ def start_slice_adapter(json_content):
 def start_slice_adapter_ssh(json_content):
     global adapter_dict
 
-    for slice_part in json_content['slice']['slice-parts']:
-        slice_name = slice_part['name']
+    for i in range(len(json_content['slice']['slice-parts'])):
+        slice_name = json_content['slice']['slice-parts'][i]['name']
         agent_name = slice_name + '_' + '_adapter_ssh'
-        ssh_ip = slice_part['VIM']['vim-ref']['ip-ssh']
-        ssh_port = slice_part['VIM']['vim-ref']['port-ssh']
-        ssh_user = slice_part['VIM']['vim-credential']['user-ssh']
-        ssh_pass = slice_part['VIM']['vim-credential']['password-ssh']
+        ssh_ip = json_content['slice']['slice-parts'][i]['VIM']['vim-ref']['ip-ssh']
+        ssh_port = json_content['slice']['slice-parts'][i]['VIM']['vim-ref']['port-ssh']
+        ssh_user = json_content['slice']['slice-parts'][i]['VIM']['vim-credential']['user-ssh']
+        ssh_pass = json_content['slice']['slice-parts'][i]['VIM']['vim-credential']['password-ssh']
 
-        for vdu in slice_part['VIM']['vdus']: 
+        for vdu in range(len(json_content['slice']['slice-parts'][i]['VIM']['vdus'])): 
         # for para identificar o master sequencialmente
             if str(vdu['type']) == "master": # um campo type identifica o mestre 
                 master_ip = str(vdu['ip']) 
@@ -186,8 +187,8 @@ def create_service():
         adapter_port = adapter_dict[slice_id][str(slices_iterator['name'])]['adapter_ssh_port']
 
         for service_it in slices_iterator['vdus']:
-            resp = requests.post("http://0.0.0.0:" + str(adapter_port) + "/createService", data = json.dumps(service_it['commands']))
-            # resp = requests.post("http://0.0.0.0:" + "1010" + "/createService", data = json.dumps(service_it['commands']))
+            # resp = requests.post("http://0.0.0.0:" + str(adapter_port) + "/createService", data = json.dumps(service_it['commands']))
+            resp = requests.post("http://0.0.0.0:" + "1010" + "/createService", data = json.dumps(service_it['commands']))
             # print(str(service_it['commands']))
             # parsed_resp = resp.content.decode('utf-8')
             # services_status.append(parsed_resp)
@@ -237,9 +238,6 @@ if __name__ == '__main__':
 #TODO
 #- perguntar sobre retorno (a resposta eu que configuro? tem como voltar tanto uma resposta como um numero)
 #- fazer arquivo global_dict ficar invisivel ao usuario (e read only???) [CONTRA: se fizer isso e deletar o adapter no portainer, programa morre]
-#- mudar chamadas de file-name pra file-content
-#- avançar update
 
 #TESTS
 #- verificar se podemos escolher pra qual worker o serviço vai
-#- testar /createService em dois VIMs (2 workers, 2 masters diferentes)
