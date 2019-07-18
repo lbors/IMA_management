@@ -41,7 +41,7 @@ def start_slice_adapter(json_content):
     for i in range(len(json_content['slice']['slice-parts'])): 
     # precisa percorrer todos slice parts do yaml para iniciar
         # print(str("slice " + str(i) + " = " + str(json_content['slice']['slice-parts'][i]))) 
-        slice_name = json_content['slice']['slice-parts'][i]['name']
+        slice_name = json_content['slice']['slice-parts'][i]['dc-slice-part']['name']
         agent_name = slice_name + '_adapter_api'
 
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -49,8 +49,8 @@ def start_slice_adapter(json_content):
         port = s.getsockname()[1]
         s.close()
         
-        temp_ip = json_content['slice']['slice-parts'][i]['VIM']['vim-ref']['ip-api']
-        temp_port = json_content['slice']['slice-parts'][i]['VIM']['vim-ref']['port-api']
+        temp_ip = json_content['slice']['slice-parts'][i]['dc-slice-part']['VIM']['vim-ref']['ip-api']
+        temp_port = json_content['slice']['slice-parts'][i]['dc-slice-part']['VIM']['vim-ref']['port-api']
         master_data = temp_ip + ":" + str(temp_port)
 
         client = docker.from_env()
@@ -68,7 +68,7 @@ def start_slice_adapter(json_content):
                 json_content['slice']['id']: {
                     slice_name: ({
                         "adapter_name":agent_name, "port":str(port)
-                    })slice_part
+                    })
                 }
             })
         # print("http://0.0.0.0:" + str(port) + "/setIPandPort")
@@ -80,14 +80,14 @@ def start_slice_adapter_ssh(json_content):
     global adapter_dict
 
     for i in range(len(json_content['slice']['slice-parts'])):
-        slice_name = json_content['slice']['slice-parts'][i]['name']
+        slice_name = json_content['slice']['slice-parts'][i]['dc-slice-part']['name']
         agent_name = slice_name + '_' + '_adapter_ssh'
-        ssh_ip = json_content['slice']['slice-parts'][i]['VIM']['vim-ref']['ip-ssh']
-        ssh_port = json_content['slice']['slice-parts'][i]['VIM']['vim-ref']['port-ssh']
-        ssh_user = json_content['slice']['slice-parts'][i]['VIM']['vim-credential']['user-ssh']
-        ssh_pass = json_content['slice']['slice-parts'][i]['VIM']['vim-credential']['password-ssh']
+        ssh_ip = json_content['slice']['slice-parts'][i]['dc-slice-part']['VIM']['vim-ref']['ip-ssh']
+        ssh_port = json_content['slice']['slice-parts'][i]['dc-slice-part']['VIM']['vim-ref']['port-ssh']
+        ssh_user = json_content['slice']['slice-parts'][i]['dc-slice-part']['VIM']['vim-credential']['user-ssh']
+        ssh_pass = json_content['slice']['slice-parts'][i]['dc-slice-part']['VIM']['vim-credential']['password-ssh']
 
-        for vdu in range(len(json_content['slice']['slice-parts'][i]['VIM']['vdus'])): 
+        for vdu in json_content['slice']['slice-parts'][i]['dc-slice-part']['VIM']['vdus']: 
         # for para identificar o master sequencialmente
             if str(vdu['type']) == "master": # um campo type identifica o mestre 
                 master_ip = str(vdu['ip']) 
