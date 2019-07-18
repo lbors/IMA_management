@@ -10,8 +10,8 @@ import time
 app = Flask(__name__)
 ssh_port = 22
 ssh_ip = '200.133.239.3X'
-ssh_user = 'andre'
-ssh_pass = '???'
+ssh_user = 'necos'
+ssh_pass = 'necos'
 master_ip = '200.18.102.6X'
 
 @app.route('/setSSH', methods = ['POST'])
@@ -49,7 +49,7 @@ def create_service():
         print(commands)
 
         if "sed" in commands:
-            commands = commands.replace("REPLACE", master_ip)
+            commands = commands.replace("$coreip", master_ip)
         
         channel = ssh.get_transport().open_session()
         channel.get_pty()         # get a PTY
