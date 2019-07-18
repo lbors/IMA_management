@@ -44,9 +44,6 @@ def create_service():
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     ssh.connect(hostname=ssh_ip,port=ssh_port,username=ssh_user,password=ssh_pass)
-    channel = ssh.get_transport().open_session()
-    channel.get_pty()
-    channel.invoke_shell()
 
     for commands in json_content: 
         print(commands)
@@ -54,6 +51,9 @@ def create_service():
         if "sed" in commands:
             commands = commands.replace("$coreip", master_ip)
         
+        channel = ssh.get_transport().open_session()
+        channel.get_pty()
+        channel.invoke_shell()
         channel.exec_command(commands)
         time.sleep(5)
         print(channel.recv(1024))
