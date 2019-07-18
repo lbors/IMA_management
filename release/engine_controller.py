@@ -87,9 +87,10 @@ def start_slice_adapter_ssh(json_content):
         ssh_user = json_content['slice']['slice-parts'][i]['dc-slice-part']['VIM']['vim-credential']['user-ssh']
         ssh_pass = json_content['slice']['slice-parts'][i]['dc-slice-part']['VIM']['vim-credential']['password-ssh']
 
-        for vdu in json_content['slice']['slice-parts'][i]['dc-slice-part']['VIM']['vdus']: 
+        for j in range(len(json_content['slice']['slice-parts'][i]['dc-slice-part']['VIM']['vdus'])): 
         # for para identificar o master sequencialmente
-            if str(vdu['type']) == "master": # um campo type identifica o mestre 
+            print(str(json_content['slice']['slice-parts'][i]['dc-slice-part']['VIM']['vdus'][j])
+            if str(json_content['slice']['slice-parts'][i]['dc-slice-part']['VIM']['vdus'][j]['type']) == "master": # um campo type identifica o mestre 
                 master_ip = str(vdu['ip']) 
 
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
