@@ -41,24 +41,16 @@ def start_slice_adapter(json_content):
     for slice_part in json_content['slice']['slice-parts']: 
     # precisa percorrer todos slice parts do yaml para iniciar 
         slice_name = slice_part['name']
-        agent_name = slice_name + '_agent_api'
+        agent_name = slice_name + '_adapter_api'
 
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.bind(('localhost', 0))
         port = s.getsockname()[1]
         s.close()
         
-        # COMENTAR ISSO OU O PROXIMO
         temp_ip = slice_part['VIM']['vim-ref']['ip-api']
         temp_port = slice_part['VIM']['vim-ref']['port-api']
         master_data = temp_ip + ":" + temp_port
-
-        # COMENTAR ESSE FOR OU O ANTERIOR
-        for vdu in slice_part['VIM']['vdus']: 
-        # for para identificar o master sequencialmente
-            if str(vdu['type']) == "master": # um campo type identifica o mestre 
-                temp_ip = str(vdu['ip']) 
-        master_data = temp_ip
 
         client = docker.from_env()
         client.containers.run("adapterk8s:latest", detach=True, name=agent_name, ports={'1010/tcp': ('localhost', port)})
@@ -87,16 +79,13 @@ def start_slice_adapter_ssh(json_content):
     global adapter_dict
 
     for slice_part in json_content['slice']['slice-parts']:
-        #if slice_part_it['VIM']['VIM_Type_access'] == 'SSH': 
-        # nao existe esse campo mais
         slice_name = slice_part['name']
-        agent_name = slice_name + '_' + '_agent_ssh'
+        agent_name = slice_name + '_' + '_adapter_ssh'
         ssh_ip = slice_part['VIM']['vim-ref']['ip-ssh']
         ssh_port = slice_part['VIM']['vim-ref']['port-ssh']
         ssh_user = slice_part['VIM']['vim-credential']['user-ssh']
         ssh_pass = slice_part['VIM']['vim-credential']['password-ssh']
 
-        # DESCOBRIR QUAL É O IP DO MASTER
         for vdu in slice_part['VIM']['vdus']: 
         # for para identificar o master sequencialmente
             if str(vdu['type']) == "master": # um campo type identifica o mestre 
