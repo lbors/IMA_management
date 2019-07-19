@@ -9,12 +9,12 @@ slice:
             # VIM_Type_access is not available
             vim-ref:
                ip-api: 143.106.11.131
-               ip-ssh: 143.106.11.131
+               ip-ssh: localhost
                port-api: 21276
-               port-ssh: 22276
+               port-ssh: 22
             vim-credential: 
                user-ssh: "necos"
-               password-ssh: "necos"
+               password-ssh: "N3c0s.1m4"
             vdus:
                - vdu:
                   id: k8s-master

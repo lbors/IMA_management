@@ -191,20 +191,33 @@ curl -X POST \
   -H 'cache-control: no-cache' \
   -d '---
 slices:
-    id: Telemarketing
-    slice-parts:     
-        -   dc-slice-part:
-            name: slice-part-01
-            vdus:
-                -   name: master-01
-                    VIM: Kubernetes
-                    commands: 
-                    - echo "Alo Mundo 1!"
-                    - git clone https://github.com/LABORA-INF-UFG/NECOS-ansible-dojot-core.git
-                    - ls
-                    - ls
-                    - cd ima-management && ls
-                    - pip install -r NECOS-ansible-dojot-core/requirements.txt'
+   sliced:
+      id: IoTService_sliced
+      slice-parts:     
+         - dc-slice-part:
+           name: dc-slice1
+           vdus:
+             - vdu:
+               name: master-01
+               VIM: Kubernetes
+               commands: 
+                - echo "Alo Mundo 1!"
+                - git clone https://github.com/LABORA-INF-UFG/NECOS-ansible-dojot-core.git
+                - ls
+                - ls
+                - echo "Alo Mundo 5!"
+         - dc-slice-part:
+           name: dc-slice2
+           vdus:
+             - vdu:
+               name: master-02
+               VIM: Kubernetes
+               commands: 
+                - echo "Alo Mundo 1!"
+                - git clone https://github.com/LABORA-INF-UFG/NECOS-ansible-dojot-core.git
+                - ls
+                - ls
+                - echo "Alo Mundo 5!"
 
 
 # inicia o management v2
@@ -294,3 +307,130 @@ slices:
                 - echo "Alo Mundo 1!"
                 - sed -i "s/REPLACE/$coreip/" NECOS-ansible-dojot-core/inventories/example_local/group_vars/dojot-k8s/dojot.yaml
                 - echo "Alo Mundo 5!"'
+
+
+
+#Used by Deploy server test
+curl -X POST \
+  http://0.0.0.0:5001/necos/ima/start_management \
+  -H 'Content-Type: application/yaml' \
+  -H 'Postman-Token: 4c83cb0c-9407-476d-9b33-f86169521cc7' \
+  -H 'cache-control: no-cache' \
+  -d 'slice:
+   id: IoTService_sliced
+   slice-parts:
+      - dc-slice-part:
+         name: dc-slice1
+         # user is not available
+         VIM:
+            name: KUBERNETES
+            # VIM_Type_access is not available
+            vim-ref:
+               ip-api: 143.106.11.131
+               ip-ssh: 143.106.11.131
+               port-api: 21277
+               port-ssh: 22277
+            vim-credential: 
+               user-ssh: "root"
+               password-ssh: "necos"
+            vdus:
+               - vdu:
+                  id: k8s-master
+                  name: k8s-master
+                  ip: 10.10.2.1
+                  # port is not available
+                  description: Master (controller) of kubernetes cluster
+                  vdu-image: kube-template
+                  type: master
+               - vdu:
+                  id: k8s-node
+                  name: k8s-node1
+                  ip: 10.10.2.2
+                  # port is not available
+                  description: Compute node of kubernetes cluster
+                  vdu-image: kube-template
+                  type: worker
+               - vdu:
+                  id: k8s-node
+                  name: k8s-node2
+                  ip: 10.10.2.3
+                  # port is not available
+                  description: Compute node of kubernetes cluster
+                  vdu-image: kube-template
+                  type: worker
+               - vdu:
+                  id: k8s-node
+                  name: k8s-node3
+                  ip: 10.10.2.4
+                  # port is not available
+                  description: Compute node of kubernetes cluster
+                  vdu-image: kube-template
+                  type: worker
+      - dc-slice-part:
+         name: dc-slice2
+         # user is not available
+         VIM:
+            name: KUBERNETES
+            # VIM_Type_access is not available
+            vim-ref:
+               ip-api: 10.1.0.3
+               ip-ssh: 10.1.0.3
+               port-api: 21564
+               port-ssh: 22564
+            vim-credential:
+               user-ssh: "root"
+               password-ssh: "necos"
+            vdus:
+               - vdu:
+                  id: k8s-master
+                  name: k8s-master
+                  ip: 10.10.5.1
+                  # port is not available
+                  description: Master (controller) of kubernetes cluster
+                  vdu-image: kube-template
+                  type: master
+               - vdu:
+                  id: k8s-node
+                  name: k8s-node
+                  ip: 10.10.5.2
+                  # port is not available
+                  description: Compute node of kubernetes cluster
+                  vdu-image: kube-template
+                  type: worker'
+
+
+# CURL para rodar o serviço
+curl -X POST \
+  http://localhost:5001/deployService \
+  -H 'Content-Type: application/yaml' \
+  -H 'Postman-Token: 4e084f32-0677-4301-92d5-4262851d0d05' \
+  -H 'cache-control: no-cache' \
+  -d '---
+slices:
+   sliced:
+      id: IoTService_sliced
+      slice-parts:     
+         - dc-slice-part:
+           name: dc-slice1
+           vdus:
+             - vdu:
+               name: master-01
+               VIM: Kubernetes
+               commands: 
+                  - git clone https://github.com/LABORA-INF-UFG/NECOS-ansible-dojot-core.git
+                  - apt install -y python-pip
+                  - pip install -r NECOS-ansible-dojot-core/requirements.txt
+                  - sed -i "s/REPLACE/$coreip/" NECOS-ansible-dojot-core/inventories/example_local/group_vars/dojot-k8s/dojot.yaml
+                  - ansible-playbook -K -k -i NECOS-ansible-dojot-core/inventories/example_local/ NECOS-ansible-dojot-core/deploy.yaml
+         - dc-slice-part:
+           name: dc-slice2
+           vdus:
+             - vdu:
+               name: master-02
+               VIM: Kubernetes
+               commands: 
+                  - git clone https://github.com/LABORA-INF-UFG/NECOS-ansible-dojot-core.git
+                  - apt install -y python-pip
+                  - pip install -r NECOS-ansible-dojot-core/requirements.txt
+                  - sed -i "s/REPLACE/$coreip/" NECOS-ansible-dojot-core/inventories/example_local/group_vars/dojot-k8s/dojot.yaml
+                  - ansible-playbook -K -k -i NECOS-ansible-dojot-core/inventories/example_local/ NECOS-ansible-dojot-core/deploy.yaml'
