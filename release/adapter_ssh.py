@@ -51,7 +51,7 @@ def create_service():
         if "sed" in commands:
             commands = commands.replace("$coreip", master_ip)
         
-        stdin, stdout, stderr = ssh.exec_command(commads)  # Non-blocking call
+        stdin, stdout, stderr = ssh.exec_command(commands)  # Non-blocking call
         exit_status = stdout.channel.recv_exit_status()          # Blocking call
         if exit_status == 0:
             print ("Command Ok!")
