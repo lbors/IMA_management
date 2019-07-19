@@ -51,24 +51,10 @@ def create_service():
         if "sed" in commands:
             commands = commands.replace("$coreip", master_ip)
         
-        #channel = ssh.get_transport().open_session()
-        #channel.get_pty()
-        #channel.invoke_shell()
-        #channel.exec_command(commands)
+        channel = ssh.get_transport().open_session()
+        channel.exec_command(commands)
         #time.sleep(5)
-        #print(channel.recv(1024))
-
-        # Send the command (non-blocking)
-        stdin, stdout, stderr = ssh.exec_command(commands)
-
-        # Wait for the command to terminate
-        while not stdout.channel.exit_status_ready():
-        # Only print data if there is data to read in the channel
-            if stdout.channel.recv_ready():
-                rl, wl, xl = select.select([stdout.channel], [], [], 0.0)
-                if len(rl) > 0:
-                    print (stdout.channel.recv(1024))
-    
+        print(channel.recv(1024))   
     ssh.close()
 
     return "OK"
