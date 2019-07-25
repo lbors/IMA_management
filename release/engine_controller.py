@@ -173,7 +173,7 @@ def stop_management():
 
 # SERVICES ########################################################################
 
-@app.route('/deployService', methods = ['POST']) 
+@app.route('/necos/ima/deploy_service', methods = ['POST']) 
 def create_service():
     # carrega o YAML e "parseia" pra Json  
     data = yaml.safe_load(request.data.decode('utf-8'))
@@ -193,6 +193,7 @@ def create_service():
             # print(str(service_it['commands']))
             # parsed_resp = resp.content.decode('utf-8')
             # services_status.append(parsed_resp)
+        time.sleep(60)
             
     # return "Commands outputs = " + ('\n'.join(services_status))
     return 'OK'
