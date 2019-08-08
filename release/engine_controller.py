@@ -106,6 +106,8 @@ def start_slice_adapter_ssh(json_content):
             ssh_user = json_content['slice']['slice-parts'][i]['dc-slice-part']['VIM']['vim-credential']['user-ssh']
             ssh_pass = json_content['slice']['slice-parts'][i]['dc-slice-part']['VIM']['vim-credential']['password-ssh']
 
+            master_ip = "null"
+
             for j in range(len(json_content['slice']['slice-parts'][i]['dc-slice-part']['VIM']['vdus'])): 
             # for para identificar o master sequencialmente
                 print(str(json_content['slice']['slice-parts'][i]['dc-slice-part']['VIM']['vdus'][j]))
