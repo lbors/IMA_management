@@ -41,79 +41,100 @@ def start_slice_adapter(json_content):
     for i in range(len(json_content['slice']['slice-parts'])): 
     # precisa percorrer todos slice parts do yaml para iniciar
         # print(str("slice " + str(i) + " = " + str(json_content['slice']['slice-parts'][i]))) 
+        temp_ip = str(json_content['slice']['slice-parts'][i]['dc-slice-part']['VIM']['vim-ref']['ip-api'])
         slice_name = json_content['slice']['slice-parts'][i]['dc-slice-part']['name']
-        agent_name = slice_name + '_adapter_api'
-
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.bind(('localhost', 0))
-        port = s.getsockname()[1]
-        s.close()
         
-        temp_ip = json_content['slice']['slice-parts'][i]['dc-slice-part']['VIM']['vim-ref']['ip-api']
-        temp_port = json_content['slice']['slice-parts'][i]['dc-slice-part']['VIM']['vim-ref']['port-api']
-        master_data = temp_ip + ":" + str(temp_port)
+        if temp_ip != "null":
+            temp_port = json_content['slice']['slice-parts'][i]['dc-slice-part']['VIM']['vim-ref']['port-api']
+            master_data = temp_ip + ":" + str(temp_port)
 
-        client = docker.from_env()
-        client.containers.run("adapterk8s:latest", detach=True, name=agent_name, ports={'1010/tcp': ('localhost', port)})
-        time.sleep(3)
+            agent_name = slice_name + '_adapter_api'
 
-        if json_content['slice']['id'] in adapter_dict:
-            adapter_dict[json_content['slice']['id']].update({ 
-                    slice_name: ({
-                        "adapter_name":agent_name, "port":str(port)
-                    })
-            })
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.bind(('localhost', 0))
+            port = s.getsockname()[1]
+            s.close()
+            
+            client = docker.from_env()
+            client.containers.run("adapterk8s:latest", detach=True, name=agent_name, ports={'1010/tcp': ('localhost', port)})
+            time.sleep(3)
+
+            if json_content['slice']['id'] in adapter_dict:
+                adapter_dict[json_content['slice']['id']].update({ 
+                        slice_name: ({
+                            "adapter_api_name":agent_name, "port":str(port)
+                        })
+                })
+            else:
+                adapter_dict.update({
+                    json_content['slice']['id']: {
+                        slice_name: ({
+                            "adapter_api_name":agent_name, "port":str(port)
+                        })
+                    }
+                })
+            # print("http://0.0.0.0:" + str(port) + "/setIPandPort")
+            requests.post("http://0.0.0.0:" + str(port) + "/setIPandPort", data = master_data)
+            print("The Adapter", agent_name, "has started")
         else:
-            adapter_dict.update({
-                json_content['slice']['id']: {
-                    slice_name: ({
-                        "adapter_name":agent_name, "port":str(port)
-                    })
-                }
-            })
-        # print("http://0.0.0.0:" + str(port) + "/setIPandPort")
-        requests.post("http://0.0.0.0:" + str(port) + "/setIPandPort", data = master_data)
-        print("The Adapter", agent_name, "has started")
+            if json_content['slice']['id'] in adapter_dict:
+                adapter_dict[json_content['slice']['id']].update({ 
+                        slice_name: ({
+                            "adapter_api_name":"null"
+                        })
+                })
+            else:
+                adapter_dict.update({
+                    json_content['slice']['id']: {
+                        slice_name: ({
+                            "adapter_api_name":"null"
+                        })
+                    }
+                })
 
 
 def start_slice_adapter_ssh(json_content):
     global adapter_dict
 
     for i in range(len(json_content['slice']['slice-parts'])):
+        ssh_ip = str(json_content['slice']['slice-parts'][i]['dc-slice-part']['VIM']['vim-ref']['ip-ssh'])
         slice_name = json_content['slice']['slice-parts'][i]['dc-slice-part']['name']
-        agent_name = slice_name + '_' + '_adapter_ssh'
-        ssh_ip = json_content['slice']['slice-parts'][i]['dc-slice-part']['VIM']['vim-ref']['ip-ssh']
-        ssh_port = json_content['slice']['slice-parts'][i]['dc-slice-part']['VIM']['vim-ref']['port-ssh']
-        ssh_user = json_content['slice']['slice-parts'][i]['dc-slice-part']['VIM']['vim-credential']['user-ssh']
-        ssh_pass = json_content['slice']['slice-parts'][i]['dc-slice-part']['VIM']['vim-credential']['password-ssh']
-
-        for j in range(len(json_content['slice']['slice-parts'][i]['dc-slice-part']['VIM']['vdus'])): 
-        # for para identificar o master sequencialmente
-            print(str(json_content['slice']['slice-parts'][i]['dc-slice-part']['VIM']['vdus'][j]))
-            if str(json_content['slice']['slice-parts'][i]['dc-slice-part']['VIM']['vdus'][j]['vdu']['type']) == "master": # um campo type identifica o mestre 
-                master_ip = str(json_content['slice']['slice-parts'][i]['dc-slice-part']['VIM']['vdus'][j]['vdu']['ip']) 
-
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.bind(('localhost', 0))
-        port = s.getsockname()[1]
-        s.close()
-
-        client = docker.from_env()
-        client.containers.run("adapter_ssh:latest", detach=True, name=agent_name, ports={'1010/tcp': ('localhost', port)})
-        time.sleep(3)
-
-        adapter_dict[json_content['slice']['id']][slice_name]['adapter_ssh_name'] = agent_name
-        adapter_dict[json_content['slice']['id']][slice_name]['adapter_ssh_port'] = str(port)
-        adapter_dict[json_content['slice']['id']][slice_name]['ssh_ip'] = str(ssh_ip)
-        adapter_dict[json_content['slice']['id']][slice_name]['ssh_port'] = str(ssh_port)
-        adapter_dict[json_content['slice']['id']][slice_name]['ssh_user'] = str(ssh_user)
-        adapter_dict[json_content['slice']['id']][slice_name]['ssh_pass'] = str(ssh_pass)
-        adapter_dict[json_content['slice']['id']][slice_name]['master_ip'] = str(master_ip)
         
-        master_data = ssh_ip + ":" + str(ssh_port) + ":" + ssh_user + ":" + ssh_pass + ":" + str(port) + ":" + master_ip
-        # print("http://0.0.0.0:" + str(port) + "/setSSH")
-        requests.post("http://0.0.0.0:" + str(port) + "/setSSH", data = master_data)
-        print("The Adapter", agent_name, "has started")
+        if ssh_ip != "null":
+            agent_name = slice_name + '_' + '_adapter_ssh'
+            ssh_port = json_content['slice']['slice-parts'][i]['dc-slice-part']['VIM']['vim-ref']['port-ssh']
+            ssh_user = json_content['slice']['slice-parts'][i]['dc-slice-part']['VIM']['vim-credential']['user-ssh']
+            ssh_pass = json_content['slice']['slice-parts'][i]['dc-slice-part']['VIM']['vim-credential']['password-ssh']
+
+            for j in range(len(json_content['slice']['slice-parts'][i]['dc-slice-part']['VIM']['vdus'])): 
+            # for para identificar o master sequencialmente
+                print(str(json_content['slice']['slice-parts'][i]['dc-slice-part']['VIM']['vdus'][j]))
+                if str(json_content['slice']['slice-parts'][i]['dc-slice-part']['VIM']['vdus'][j]['vdu']['type']) == "master": # um campo type identifica o mestre 
+                    master_ip = str(json_content['slice']['slice-parts'][i]['dc-slice-part']['VIM']['vdus'][j]['vdu']['ip']) 
+
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.bind(('localhost', 0))
+            port = s.getsockname()[1]
+            s.close()
+
+            client = docker.from_env()
+            client.containers.run("adapter_ssh:latest", detach=True, name=agent_name, ports={'1010/tcp': ('localhost', port)})
+            time.sleep(3)
+
+            adapter_dict[json_content['slice']['id']][slice_name]['adapter_ssh_name'] = agent_name
+            adapter_dict[json_content['slice']['id']][slice_name]['adapter_ssh_port'] = str(port)
+            adapter_dict[json_content['slice']['id']][slice_name]['ssh_ip'] = str(ssh_ip)
+            adapter_dict[json_content['slice']['id']][slice_name]['ssh_port'] = str(ssh_port)
+            adapter_dict[json_content['slice']['id']][slice_name]['ssh_user'] = str(ssh_user)
+            adapter_dict[json_content['slice']['id']][slice_name]['ssh_pass'] = str(ssh_pass)
+            adapter_dict[json_content['slice']['id']][slice_name]['master_ip'] = str(master_ip)
+            
+            master_data = ssh_ip + ":" + str(ssh_port) + ":" + ssh_user + ":" + ssh_pass + ":" + str(port) + ":" + master_ip
+            # print("http://0.0.0.0:" + str(port) + "/setSSH")
+            requests.post("http://0.0.0.0:" + str(port) + "/setSSH", data = master_data)
+            print("The Adapter", agent_name, "has started")
+        else:
+            adapter_dict[json_content['slice']['id']][slice_name]['adapter_ssh_name'] = "null"
 
 @app.route('/')
 def default_options():
