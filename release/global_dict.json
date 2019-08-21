@@ -1,0 +1,32 @@
+{
+    "Telemarketing": {
+        "slice-part-test-01": {
+            "adapter_name": "slice-part-test-01_Telefonicas_agent",
+            "port": "33855"
+        }
+    },
+    "IoTService_sliced": {
+        "dc-slice1": {
+            "adapter_api_name": "dc-slice1_adapter_api",
+            "port": "55015",
+            "adapter_ssh_name": "dc-slice1__adapter_ssh",
+            "adapter_ssh_port": "55039",
+            "ssh_ip": "localhost",
+            "ssh_port": "22",
+            "ssh_user": "necos",
+            "ssh_pass": "N3c0s.1m4",
+            "master_ip": "10.10.2.1"
+        },
+        "dc-slice2": {
+            "adapter_api_name": "dc-slice2_adapter_api",
+            "port": "57693",
+            "adapter_ssh_name": "dc-slice2__adapter_ssh",
+            "adapter_ssh_port": "58837",
+            "ssh_ip": "10.1.0.3",
+            "ssh_port": "22563",
+            "ssh_user": "necos",
+            "ssh_pass": "necos",
+            "master_ip": "10.10.5.1"
+        }
+    }
+}

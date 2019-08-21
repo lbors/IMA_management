@@ -14,21 +14,18 @@ slices:
                      user: necos
                      password: N3c0s.1m4
                      master-ip: 200.18.102.28
-                     commands: 
-                        - git clone https://github.com/LABORA-INF-UFG/NECOS-ansible-dojot-core.git
-                        - echo "alo mundo"
+                     update: replica
+                     replica: 6
          - dc-slice-part:
              name: dc-slice2
              vdus:
                  - vdu:
                      id: k8s-master
                      name: k8s-master
-                     VIM: <None/Kubernetes/Openstack/etc>
-                     IP: <X>
-                     port: <X>
-                     user: <X>
-                     password: <X>
-                     master-ip: <X>
-                     commands: 
-                        - git clone https://github.com/LABORA-INF-UFG/NECOS-ansible-dojot-core.git
-                        - echo "hello word222"
+                     VIM: Kubernetes
+                     IP: localhost
+                     port: 22
+                     user: necos
+                     password: N3c0s.1m4
+                     master-ip: 200.18.102.28
+                     update: redeploy

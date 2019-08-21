@@ -101,7 +101,7 @@ def start_slice_adapter_ssh(json_content):
         slice_name = json_content['slice']['slice-parts'][i]['dc-slice-part']['name']
         
         if ssh_ip != "null":
-            agent_name = slice_name + '_' + '_adapter_ssh'
+            agent_name = slice_name + '_adapter_ssh'
             ssh_port = json_content['slice']['slice-parts'][i]['dc-slice-part']['VIM']['vim-ref']['port-ssh']
             ssh_user = json_content['slice']['slice-parts'][i]['dc-slice-part']['VIM']['vim-credential']['user-ssh']
             ssh_pass = json_content['slice']['slice-parts'][i]['dc-slice-part']['VIM']['vim-credential']['password-ssh']
@@ -207,16 +207,19 @@ def create_service():
     slice_id = json_content['slices']['sliced']['id']
     for slices_iterator in json_content['slices']['sliced']['slice-parts']:
         # pra cada slice_part do yaml vai adicionar N servicos, mas em apenas UM namespace
-        print(str(slices_iterator))
-        adapter_port = adapter_dict[slice_id][str(slices_iterator['name'])]['adapter_ssh_port']
+        # print(str(slices_iterator))
 
-        for service_it in slices_iterator['vdus']:
-            resp = requests.post("http://0.0.0.0:" + str(adapter_port) + "/createService", data = json.dumps(service_it['commands']))
+        # adapter_port = adapter_dict[slice_id][str(slices_iterator['name'])]['adapter_ssh_port']
+        adapter_port = adapter_dict[slice_id][str(slices_iterator['dc-slice-part']['name'])]['adapter_ssh_port']
+
+        for service_it in slices_iterator['dc-slice-part']['vdus']:
+            # print("service it ==== " + str(service_it))
+            resp = requests.post("http://0.0.0.0:" + str(adapter_port) + "/createService", data = json.dumps(service_it['vdu']['commands']))
             #resp = requests.post("http://0.0.0.0:" + "1010" + "/createService", data = json.dumps(service_it['commands']))
             # print(str(service_it['commands']))
             # parsed_resp = resp.content.decode('utf-8')
             # services_status.append(parsed_resp)
-        time.sleep(60)
+        time.sleep(30)
             
     # return "Commands outputs = " + ('\n'.join(services_status))
     return 'OK'
@@ -245,6 +248,9 @@ def update_service():
     json_content = json.loads(json_content)
 
     adapter_port = adapter_dict[json_content['slice_id']][json_content['slice_part_id']]['port']
+    adapter_port = adapter_dict[json_content['slice_id']][json_content['slice_part_id']]['ssh_port']
+
+    adapter_dict[slice_id][str(slices_iterator['dc-slice-part']['name'])]['adapter_ssh_port']
 
     if json_content['flag'] == "replica":
         resp = requests.post("http://0.0.0.0:" + str(adapter_port) + "/replicaScale", data = json.dumps(json_content['slices']['sliced'][slice_id]['slice-parts']['vdus']['commands']))
