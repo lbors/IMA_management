@@ -1,4 +1,5 @@
 ---
+<<<<<<< HEAD:yamlFiles/pod-varios.yaml
 namespace: espaco-testes
 name: nginx
 pod_info: 
@@ -109,3 +110,97 @@ service_info:
       type: NodePort
       selector:
     app: example-pod22
+=======
+slice_id: Telemarketing
+slice_parts:
+  - s:
+    slice_part_id: slice-part-test-01
+    namespace: espaco-testes
+    pod_info:
+      - pod: 
+        apiVersion: v1
+        kind: Pod
+        metadata:
+          namespace: espaco-testes
+          name: nginx
+          labels:
+            name: nginx
+        spec:
+          containers:
+          - name: nginx
+            image: nginx
+            ports:
+              - containerPort: 443
+            volumeMounts:
+              - mountPath: "/etc/nginx/"
+                name: "nginx-conf"
+              - mountPath: "/usr/local/etc/nginx/ssl"
+                name: "ssl-certs"
+          volumes:
+            - name: "nginx-conf"
+              secret:
+                secretName: "nginx.conf"
+            - name: "ssl-certs"
+              secret:
+                secretName: "nginx-ssl-certs"
+    service_info:
+      - service:  
+        apiVersion: v1
+        kind: Service
+        metadata:
+          name: example-service
+          labels:
+            app: example-service
+        spec:
+          ports:
+          - port: 80
+            targetPort: 4000
+          type: NodePort
+          selector:
+        app: example-pod
+  - s:
+    slice_part_id: slice-part-test-02
+    namespace: espaco-testes
+    pod_info:
+      - pod: 
+        apiVersion: v1
+        kind: Pod
+        metadata:
+          namespace: espaco-testes
+          name: nginx
+          labels:
+            name: nginx
+        spec:
+          containers:
+          - name: nginx
+            image: nginx
+            ports:
+              - containerPort: 443
+            volumeMounts:
+              - mountPath: "/etc/nginx/"
+                name: "nginx-conf"
+              - mountPath: "/usr/local/etc/nginx/ssl"
+                name: "ssl-certs"
+          volumes:
+            - name: "nginx-conf"
+              secret:
+                secretName: "nginx.conf"
+            - name: "ssl-certs"
+              secret:
+                secretName: "nginx-ssl-certs"
+    service_info:
+      - service:  
+        apiVersion: v1
+        kind: Service
+        metadata:
+          name: example-service
+          labels:
+            app: example-service
+        spec:
+          ports:
+          - port: 80
+            targetPort: 4000
+          type: NodePort
+          selector:
+        app: example-pod
+>>>>>>> ssh:files/pod-varios.yaml

@@ -1,0 +1,45 @@
+---
+slice_id: Telemarketing
+slice_parts:
+  - s:
+    slice_part_id: slice-part-01
+    namespace: necos
+    service_info:
+      - service:  
+        apiVersion: v1
+        kind: Service
+        metadata:
+          name: nginx1
+          labels:
+            app: nginx1
+        spec:
+          selector:
+            app: nginx1
+          ports:
+          - port: 80
+            name: http
+            targetPort: 80
+          - port: 443
+            name: https
+            targetPort: 80
+  - s:
+    slice_part_id: slice-part-02
+    namespace: leris
+    service_info:
+      - service:  
+        apiVersion: v1
+        kind: Service
+        metadata:
+          name: nginx2
+          labels:
+            app: nginx2
+        spec:
+          selector:
+            app: nginx2
+          ports:
+          - port: 80
+            name: http
+            targetPort: 80
+          - port: 443
+            name: https
+            targetPort: 80

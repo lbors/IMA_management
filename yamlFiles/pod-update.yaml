@@ -2,6 +2,7 @@
 slice_id: Telemarketing
 slice_parts:
   - s:
+    flag: redeploy
     slice_part_id: slice-part-test-01
     namespace: default
     service_info:

@@ -1,0 +1,29 @@
+---
+slices:
+   sliced:
+      id: Telemarketing
+      slice-parts:     
+         - dc-slice-part:
+           name: slice-part-01
+           vdus:
+             - vdu:
+               name: master-01
+               VIM: Kubernetes
+               commands: 
+                  - git clone https://github.com/LABORA-INF-UFG/NECOS-ansible-dojot-core.git
+                  - apt install -y python-pip
+                  - pip install -r NECOS-ansible-dojot-core/requirements.txt
+                  - sed -i "s/REPLACE/$coreip/" NECOS-ansible-dojot-core/inventories/example_local/group_vars/dojot-k8s/dojot.yaml
+                  - ansible-playbook -K -k -i NECOS-ansible-dojot-core/inventories/example_local/ NECOS-ansible-dojot-core/deploy.yaml
+         - dc-slice-part:
+           name: slice-part-02
+           vdus:
+             - vdu:
+               name: master-02
+               VIM: Kubernetes
+               commands: 
+                  - git clone https://github.com/LABORA-INF-UFG/NECOS-ansible-dojot-core.git
+                  - apt install -y python-pip
+                  - pip install -r NECOS-ansible-dojot-core/requirements.txt
+                  - sed -i "s/REPLACE/$coreip/" NECOS-ansible-dojot-core/inventories/example_local/group_vars/dojot-k8s/dojot.yaml
+                  - ansible-playbook -K -k -i NECOS-ansible-dojot-core/inventories/example_local/ NECOS-ansible-dojot-core/deploy.yaml

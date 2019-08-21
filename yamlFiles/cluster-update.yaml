@@ -1,0 +1,37 @@
+---
+flag: delete # append or delete
+slice-id: Telemarketing
+slice-part-id: slice-part-update-test
+dc-slice-part:
+    -   slice-part:
+        name: slice-part-update-test
+        user: EmpresaX
+        VIM: # VIM information
+            VIM_Type_name: "Kubernetes"
+        vdus: # Virtual Deployment Unit
+            - dc-vdu: # data-center
+                name: master-test-99
+                ip-address: 192.168.1.100
+                port: 8080
+                description: load balancer for elastic CDN deployment master 
+                template_name: kube-template
+                type: master
+            - dc-vdu:
+                name: worker-test-98
+                ip-address: 10.10.10.71
+                port: 8080
+                description: load balancer for elastic CDN deployment 
+                template_name: kube-template
+                type: worker
+            - dc-vdu:
+                name: worker-test-99
+                ip-address: 10.10.10.72
+                description: load balancer for elastic CDN deployment 
+                template_name: kube-template
+                type: worker
+
+# flag: delete # append or delete
+# slice-id: Telemarketing
+# dc-slice-part:
+#     -   slice-part:
+#         name: slice-part-update-test
