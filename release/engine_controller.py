@@ -247,9 +247,10 @@ def update_service():
     adapter_port = adapter_dict[json_content['slice_id']][json_content['slice_part_id']]['port']
 
     if json_content['flag'] == "replica":
-        update = "replica"
+        resp = requests.post("http://0.0.0.0:" + str(adapter_port) + "/replicaScale", data = json.dumps(json_content['slices']['sliced'][slice_id]['slice-parts']['vdus']['commands']))
     elif json_content['flag'] == "redeploy":  
-        update = "redeploy"
+        requests.post("http://0.0.0.0:" + str(adapter_ssh_port) + "/deleteService", data = json.dumps(json_content['slices']['sliced'][slice_id]['slice-parts']))
+        resp = requests.post("http://0.0.0.0:" + str(adapter_ssh_port) + "/createService", data = json.dumps(json_content['slices']['sliced'][slice_id]['slice-parts']['vdus']['commands']))
     else: 
         return 'Error: The yaml sent has a invalid flag.'
     return 'OK'
