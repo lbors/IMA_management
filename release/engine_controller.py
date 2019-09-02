@@ -181,7 +181,7 @@ def start_management():
     save_dict()
     return str(json.dumps(adapter_dict, indent=2))
 
-@app.route('/stopManagement', methods = ['POST'])
+@app.route('/necos/ima/stopManagement', methods = ['POST'])
 def stop_management():
     post_data = request.data.decode('utf-8') # exemplo de entrada: "Telefonica"
 
