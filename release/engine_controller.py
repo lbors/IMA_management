@@ -187,9 +187,14 @@ def stop_management():
 
     for slice_part in adapter_dict[post_data]:
         client = docker.from_env()
-        container = client.containers.get(slice_part)
-        container.stop()
-        container.remove()
+        if adapter_dict[slice_part]["adapter_api_name"] != "null":
+            container = client.containers.get(adapter_dict[slice_part]["adapter_api_name"])
+            container.stop()
+            container.remove()
+        if adapter_dict[slice_part]["adapter_ssh_name"] != "null":
+            container = client.containers.get(adapter_dict[slice_part]["adapter_ssh_name"])
+            container.stop()
+            container.remove()
     adapter_dict.pop(post_data)
     save_dict()
     return str('The slice ' + post_data + ' has been deleted.')
