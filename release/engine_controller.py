@@ -92,7 +92,6 @@ def start_slice_adapter(json_content):
                     }
                 })
 
-
 def start_slice_adapter_ssh(json_content):
     global adapter_dict
 
@@ -123,20 +122,52 @@ def start_slice_adapter_ssh(json_content):
             client.containers.run("adapter_ssh:latest", detach=True, name=agent_name, ports={'1010/tcp': ('localhost', port)})
             time.sleep(3)
 
-            adapter_dict[json_content['slice']['id']][slice_name]['adapter_ssh_name'] = agent_name
-            adapter_dict[json_content['slice']['id']][slice_name]['adapter_ssh_port'] = str(port)
-            adapter_dict[json_content['slice']['id']][slice_name]['ssh_ip'] = str(ssh_ip)
-            adapter_dict[json_content['slice']['id']][slice_name]['ssh_port'] = str(ssh_port)
-            adapter_dict[json_content['slice']['id']][slice_name]['ssh_user'] = str(ssh_user)
-            adapter_dict[json_content['slice']['id']][slice_name]['ssh_pass'] = str(ssh_pass)
-            adapter_dict[json_content['slice']['id']][slice_name]['master_ip'] = str(master_ip)
+            if json_content['slice']['id'] in adapter_dict:
+                adapter_dict[json_content['slice']['id']].update({ 
+                        slice_name: ({
+                            "port":str(port),
+                            "adapter_ssh_name": agent_name,
+                            'ssh_ip': str(ssh_ip),
+                            'ssh_port': str(ssh_port),
+                            'ssh_user': str(ssh_user),
+                            'ssh_pass': str(ssh_pass),
+                            'master_ip': str(master_ip)
+                        })
+                })
+            else:
+                adapter_dict.update({
+                    json_content['slice']['id']: {
+                        slice_name: ({
+                            'port': str(port),
+                            'adapter_ssh_name': agent_name,
+                            'ssh_ip': str(ssh_ip),
+                            'ssh_port': str(ssh_port),
+                            'ssh_user': str(ssh_user),
+                            'ssh_pass': str(ssh_pass),
+                            'master_ip': str(master_ip)
+                        })
+                    }
+                })
             
             master_data = ssh_ip + ":" + str(ssh_port) + ":" + ssh_user + ":" + ssh_pass + ":" + str(port) + ":" + master_ip
             # print("http://0.0.0.0:" + str(port) + "/setSSH")
             requests.post("http://0.0.0.0:" + str(port) + "/setSSH", data = master_data)
             print("The Adapter", agent_name, "has started")
         else:
-            adapter_dict[json_content['slice']['id']][slice_name]['adapter_ssh_name'] = "null"
+            if json_content['slice']['id'] in adapter_dict:
+                adapter_dict[json_content['slice']['id']].update({ 
+                        slice_name: ({
+                            'adapter_ssh_name': 'null'
+                        })
+                })
+            else:
+                adapter_dict.update({
+                    json_content['slice']['id']: {
+                        slice_name: ({
+                            'adapter_ssh_name': 'null'
+                        })
+                    }
+                })
 
 @app.route('/')
 def default_options():
@@ -147,6 +178,7 @@ def list_adapters():
     # print(json.dumps(adapter_dict, indent=2))
     return str(json.dumps(adapter_dict, indent=2))
     
+# FUNCAO INCOMPLETA, PRECISA DE REVISAO    
 @app.route('/updateManagement', methods = ['POST'])
 def update_management():
     # carrega o YAML e "parseia" pra Json  
@@ -175,7 +207,7 @@ def start_management():
     json_content = json.dumps(yaml.safe_load(request.data.decode('utf-8')))
     json_content = json.loads(json_content)
 
-    start_slice_adapter(json_content)
+    # start_slice_adapter(json_content)
     start_slice_adapter_ssh(json_content)
     # list_adapters()
     save_dict()
@@ -187,11 +219,11 @@ def stop_management():
 
     for slice_part in adapter_dict[post_data]:
         client = docker.from_env()
-        if adapter_dict[slice_part]["adapter_api_name"] != "null":
-            container = client.containers.get(adapter_dict[slice_part]["adapter_api_name"])
-            container.stop()
-            container.remove()
-        if adapter_dict[slice_part]["adapter_ssh_name"] != "null":
+        # if adapter_dict[post_data][slice_part]["adapter_api_name"] != "null":
+        #     container = client.containers.get(adapter_dict[slice_part]["adapter_api_name"])
+        #     container.stop()
+        #     container.remove()
+        if adapter_dict[post_data][slice_part]["adapter_ssh_name"] != "null":
             container = client.containers.get(adapter_dict[slice_part]["adapter_ssh_name"])
             container.stop()
             container.remove()
@@ -207,7 +239,7 @@ def create_service():
     data = yaml.safe_load(request.data.decode('utf-8'))
     json_content = json.dumps(data)
     json_content = json.loads(json_content)
-    services_status = []
+    # services_status = []
 
     slice_id = json_content['slices']['sliced']['id']
     for slices_iterator in json_content['slices']['sliced']['slice-parts']:
@@ -219,7 +251,7 @@ def create_service():
 
         for service_it in slices_iterator['dc-slice-part']['vdus']:
             # print("service it ==== " + str(service_it))
-            resp = requests.post("http://0.0.0.0:" + str(adapter_port) + "/createService", data = json.dumps(service_it['vdu']['commands']))
+            requests.post("http://0.0.0.0:" + str(adapter_port) + "/createService", data = json.dumps(service_it['vdu']['commands']))
             #resp = requests.post("http://0.0.0.0:" + "1010" + "/createService", data = json.dumps(service_it['commands']))
             # print(str(service_it['commands']))
             # parsed_resp = resp.content.decode('utf-8')
@@ -245,6 +277,7 @@ def delete_service():
         services_status.append(parsed_resp)
     return ('\n'.join(services_status))
 
+# FUNCAO INCOMPLETA, FALTA REVISAO
 @app.route('/updateService', methods = ['POST']) 
 def update_service():
     # carrega o body do POST e "parseia" pra Json  
@@ -255,26 +288,22 @@ def update_service():
     adapter_port = adapter_dict[json_content['slice_id']][json_content['slice_part_id']]['port']
     adapter_port = adapter_dict[json_content['slice_id']][json_content['slice_part_id']]['ssh_port']
 
-    adapter_dict[slice_id][str(slices_iterator['dc-slice-part']['name'])]['adapter_ssh_port']
+    slice_id = json_content["slices"]["sliced"]["id"]
 
-    if json_content['flag'] == "replica":
-        resp = requests.post("http://0.0.0.0:" + str(adapter_port) + "/replicaScale", data = json.dumps(json_content['slices']['sliced'][slice_id]['slice-parts']['vdus']['commands']))
-    elif json_content['flag'] == "redeploy":  
-        requests.post("http://0.0.0.0:" + str(adapter_ssh_port) + "/deleteService", data = json.dumps(json_content['slices']['sliced'][slice_id]['slice-parts']))
-        resp = requests.post("http://0.0.0.0:" + str(adapter_ssh_port) + "/createService", data = json.dumps(json_content['slices']['sliced'][slice_id]['slice-parts']['vdus']['commands']))
-    else: 
-        return 'Error: The yaml sent has a invalid flag.'
-    return 'OK'
+    for slices_iterator in json_content["slices"]["sliced"]["id"]["dc-slice-part"]:
+        
+        # if json_content['update'] == "replica":
+        #     resp = requests.post("http://0.0.0.0:" + str(adapter_port) + "/replicaScale", data = json.dumps(json_content['slices']['sliced'][slice_id]['slice-parts']['vdus']['commands']))
+        # elif json_content['update'] == "redeploy":  
+        #     requests.post("http://0.0.0.0:" + str(adapter_ssh_port) + "/deleteService", data = json.dumps(json_content['slices']['sliced'][slice_id]['slice-parts']))
+        #     resp = requests.post("http://0.0.0.0:" + str(adapter_ssh_port) + "/createService", data = json.dumps(json_content['slices']['sliced'][slice_id]['slice-parts']['vdus']['commands']))
+        # else: 
+        #     print('Error: The yaml sent has a invalid flag.')
+        # print('OK')
+        print(str(slices_iterator) + " " + str(slice_id))
 
     resp = requests.post("http://0.0.0.0:" + str(adapter_port) + "/updateService", data = str(json_content))
     return str(resp.status_code)
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port='5001')
-
-#TODO
-#- perguntar sobre retorno (a resposta eu que configuro? tem como voltar tanto uma resposta como um numero)
-#- fazer arquivo global_dict ficar invisivel ao usuario (e read only???) [CONTRA: se fizer isso e deletar o adapter no portainer, programa morre]
-
-#TESTS
-#- verificar se podemos escolher pra qual worker o serviço vai
