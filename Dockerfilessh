@@ -1,4 +1,4 @@
-FROM ubuntu:latest
+FROM python:3.7-alpine
 RUN \
 	apt update && \
 	apt -y upgrade && \
@@ -17,7 +17,6 @@ RUN \
     pip3 install docker && \
     apt -y install iputils-ping && \
     cd IMA_management/ && \
-    git checkout ssh && \
     git pull
 
-ENTRYPOINT python3.6 IMA_management/release/adapter_ssh.py >> adapter.log
+ENTRYPOINT python3.7 IMA_management/release/adapter_ssh.py >> adapter.log

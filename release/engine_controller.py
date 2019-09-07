@@ -6,6 +6,7 @@ import docker
 import json
 import socket
 import time
+import threading
 from subprocess import call 
 
 app = Flask(__name__)
@@ -254,6 +255,84 @@ def create_container(slice_name, slice_part, adapter_type, json_content):
                 }
             })
 
+def create_adapter(slice_id, slice_part_id, port, json_content):
+    global adapter_dict
+
+    agent_name = slice_part_id + '_adapter_ssh'
+    ssh_ip = json_content['dc-slice-part']['VIM']['vim-ref']['ip-ssh']
+    ssh_port = json_content['dc-slice-part']['VIM']['vim-ref']['port-ssh']
+    ssh_user = json_content['dc-slice-part']['VIM']['vim-credential']['user-ssh']
+    ssh_pass = json_content['dc-slice-part']['VIM']['vim-credential']['password-ssh']
+    master_ip = "null"
+
+    for j in range(len(json_content['dc-slice-part']['VIM']['vdus'])): 
+        if str(json_content['dc-slice-part']['VIM']['vdus'][j]['vdu']['type']) == "master": 
+            master_ip = str(json_content['dc-slice-part']['VIM']['vdus'][j]['vdu']['ip'])
+
+    client = docker.from_env()
+    client.containers.run("adapter_ssh:latest", detach=True, name=agent_name, ports={'1010/tcp': ('localhost', port)})
+
+    master_data = ssh_ip + ":" + str(ssh_port) + ":" + ssh_user + ":" + ssh_pass + ":" + str(port) + ":" + master_ip
+
+    while True:
+        try:
+            requests.post("http://0.0.0.0:" + str(port) + "/setSSH", data = master_data)
+            break
+        except requests.exceptions.ConnectionError:
+            pass
+
+    print("The Adapter", agent_name, "has started")
+
+    if slice_id in adapter_dict:
+            adapter_dict[slice_id].update({ 
+                    slice_part_id: ({
+                        "port":str(port),
+                        "adapter_ssh_name": agent_name,
+                        'ssh_ip': str(ssh_ip),
+                        'ssh_port': str(ssh_port),
+                        'ssh_user': str(ssh_user),
+                        'ssh_pass': str(ssh_pass),
+                        'master_ip': str(master_ip)
+                    })
+            })
+    else:
+        adapter_dict.update({
+            slice_id: {
+                slice_part_id: ({
+                    'port': str(port),
+                    'adapter_ssh_name': agent_name,
+                    'ssh_ip': str(ssh_ip),
+                    'ssh_port': str(ssh_port),
+                    'ssh_user': str(ssh_user),
+                    'ssh_pass': str(ssh_pass),
+                    'master_ip': str(master_ip)
+                    })
+                }
+            })
+
+def start_slice_adapterv2(json_content):
+    global adapter_dict
+    threads = []
+    slice_id = json_content['slice']['id']
+    adapter_dict.update({slice_id:{}})
+
+    for i in range(len(json_content['slice']['slice-parts'])):
+        slice_part_id = json_content['slice']['slice-parts'][i]['dc-slice-part']['name']
+
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.bind(('localhost', 0))
+        port = s.getsockname()[1]
+        s.close()
+
+        t = threading.Thread(target=create_adapter,args=(slice_id, slice_part_id, port, json_content['slice']['slice-parts'][i],))
+        threads.append(t)
+        t.start()
+
+    for t in threads:
+        t.join()
+
+    return "The Adapters was started!"
+
 def delete_container(slice_name, slice_part, container_name):
     client = docker.from_env()
     container = client.containers.get(container_name)
@@ -292,7 +371,8 @@ def start_management():
     json_content = json.loads(json_content)
 
     # start_slice_adapter(json_content)
-    start_slice_adapter_ssh(json_content)
+    #start_slice_adapter_ssh(json_content)
+    start_slice_adapterv2(json_content)
     # list_adapters()
     save_dict()
     return str(json.dumps(adapter_dict, indent=2))
