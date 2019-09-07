@@ -27,7 +27,7 @@ def load_dict():
         file.close()
         adapter_dict = json.loads(data)
     except FileNotFoundError:
-        print ('File "global_dict.json" does not exist. Resuming execution.')   
+        print ('File "global_dict.json" does not exist. Resuming execution.')
     except AttributeError: 
         print ('File "global_dict.json" is not a valid Json file. Resuming execution with a empty dict.')  
 
@@ -331,18 +331,24 @@ def start_slice_adapterv2(json_content):
     for t in threads:
         t.join()
 
+    save_dict()
     return "The Adapters was started!"
 
-def delete_container(slice_name, slice_part, container_name):
+def delete_container(container_name):
     client = docker.from_env()
     container = client.containers.get(container_name)
-    container.stop()
-    container.remove()
-    adapter_dict[slice_name].pop(slice_part)
+    try:
+        container.stop()
+    except:
+        pass
+    try:
+        container.remove()
+    except:
+        pass
 
-@app.route('/necos/ima/updateManagement', methods = ['POST'])
+@app.route('/necos/ima/update_management', methods = ['POST'])
 def update_management():
-    # carrega o YAML e "parseia" pra Json  
+    global adapter_dict
     data = yaml.safe_load(request.data.decode('utf-8'))
     json_content = json.dumps(data) 
     json_content = json.loads(json_content)
@@ -350,16 +356,18 @@ def update_management():
     if json_content['slice']['id'] in adapter_dict:
         i = 0
         for i in range(len(json_content['slice']['slice-parts'])):
-            slice_name = json_content['slice']['slice-parts'][i]['dc-slice-part']['name']
-            if slice_name in adapter_dict[json_content['slice']['id']]:
-                # print("Deleting adapter '" + slice_name + "_adapter_api" + "'")
-                # delete_container(json_content['slice']['id'], slice_name, slice_name + "_adapter_api")
-                print("Deleting adapter '" + slice_name + "_adapter_ssh" + "'")
-                delete_container(json_content['slice']['id'], slice_name, slice_name + "_adapter_ssh")
+            slice_part_id = json_content['slice']['slice-parts'][i]['dc-slice-part']['name']
+            if slice_part_id in adapter_dict[json_content['slice']['id']]:
+                print("Deleting adapter '" + slice_part_id + "_adapter_ssh" + "'")
+                delete_container(slice_part_id+"_adapter_ssh")
+                adapter_dict[json_content['slice']['id']].pop(slice_part_id)
             else:
-                # start_slice_adapter(json_content)
-                print("Creating adapter '" + slice_name + "_adapter_ssh" + "'")
-                create_container(json_content['slice']['id'], slice_name, "ssh", json_content['slice']['slice-parts'][i])
+                print("Creating adapter '" + slice_part_id + "_adapter_ssh" + "'")
+                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                s.bind(('localhost', 0))
+                port = s.getsockname()[1]
+                s.close()
+                create_adapter(json_content['slice']['id'], slice_part_id, port, json_content['slice']['slice-parts'][i])
         save_dict()
         return str(json.dumps(adapter_dict, indent=2))
     else:
@@ -369,28 +377,26 @@ def update_management():
 def start_management():
     json_content = json.dumps(yaml.safe_load(request.data.decode('utf-8')))
     json_content = json.loads(json_content)
-
-    # start_slice_adapter(json_content)
-    #start_slice_adapter_ssh(json_content)
     start_slice_adapterv2(json_content)
-    # list_adapters()
     save_dict()
+
     return str(json.dumps(adapter_dict, indent=2))
 
-@app.route('/necos/ima/stopManagement', methods = ['POST'])
+@app.route('/necos/ima/stop_management', methods = ['POST'])
 def stop_management():
+    global adapter_dict
     post_data = request.data.decode('utf-8') # exemplo de entrada: "Telefonica"
+    threads = []    
 
     for slice_part in adapter_dict[post_data]:
-        client = docker.from_env()
-        # if adapter_dict[post_data][slice_part]["adapter_api_name"] != "null":
-        #     container = client.containers.get(adapter_dict[slice_part]["adapter_api_name"])
-        #     container.stop()
-        #     container.remove()
         if adapter_dict[post_data][slice_part]["adapter_ssh_name"] != "null":
-            container = client.containers.get(adapter_dict[post_data][slice_part]["adapter_ssh_name"])
-            container.stop()
-            container.remove()
+            t = threading.Thread(target=delete_container,args=(adapter_dict[post_data][slice_part]["adapter_ssh_name"],))
+            threads.append(t)
+            t.start()
+            
+    for t in threads:
+        t.join()
+
     adapter_dict.pop(post_data)
     save_dict()
     return str('The slice ' + post_data + ' has been deleted.')
@@ -399,31 +405,22 @@ def stop_management():
 
 @app.route('/necos/ima/deploy_service', methods = ['POST']) 
 def create_service():
-    # carrega o YAML e "parseia" pra Json  
     data = yaml.safe_load(request.data.decode('utf-8'))
     json_content = json.dumps(data)
     json_content = json.loads(json_content)
-    # services_status = []
 
     slice_id = json_content['slices']['sliced']['id']
     for slices_iterator in json_content['slices']['sliced']['slice-parts']:
-        # pra cada slice_part do yaml vai adicionar N servicos, mas em apenas UM namespace
-        # print(str(slices_iterator))
+        adapter_port = adapter_dict[slice_id][str(slices_iterator['name'])]['port']
 
-        # adapter_port = adapter_dict[slice_id][str(slices_iterator['name'])]['adapter_ssh_port']
-        adapter_port = adapter_dict[slice_id][str(slices_iterator['dc-slice-part']['name'])]['adapter_ssh_port']
+        for service_it in slices_iterator['vdus']:
+            requests.post("http://0.0.0.0:" + str(adapter_port) + "/createService", data = json.dumps(service_it['commands']))
 
-        for service_it in slices_iterator['dc-slice-part']['vdus']:
-            # print("service it ==== " + str(service_it))
-            requests.post("http://0.0.0.0:" + str(adapter_port) + "/createService", data = json.dumps(service_it['vdu']['commands']))
-            #resp = requests.post("http://0.0.0.0:" + "1010" + "/createService", data = json.dumps(service_it['commands']))
-            # print(str(service_it['commands']))
-            # parsed_resp = resp.content.decode('utf-8')
-            # services_status.append(parsed_resp)
+    if slice_id == 'IoTService_sliced':
         time.sleep(30)
             
     # return "Commands outputs = " + ('\n'.join(services_status))
-    return 'OK'
+    return 'The Service for ' + slice_id + ' was created!'
 
 @app.route('/deleteService', methods = ['POST']) 
 def delete_service():

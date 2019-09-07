@@ -1,1 +1,1 @@
-{"TouristicCDN_sliced": {"edge-dc-slice-brazil": {"port": "56667", "adapter_ssh_name": "edge-dc-slice-brazil_adapter_ssh", "ssh_ip": "200.133.239.38", "ssh_port": "22008", "ssh_user": "root", "ssh_pass": "necos", "master_ip": "10.10.4.1"}, "core-dc": {"port": "57023", "adapter_ssh_name": "core-dc_adapter_ssh", "ssh_ip": "143.106.11.131", "ssh_port": "22131", "ssh_user": "root", "ssh_pass": "necos", "master_ip": "null"}}}
+{}
