@@ -1,0 +1,13 @@
+slices:
+  sliced:
+    id: IoTService_sliced
+    slice-parts:
+      - dc-slice-part:
+        name: dc-slice1
+        vdus:
+          - vdu:
+            commands:
+              - git clone https://github.com/LABORA-INF-UFG/NECOS-ansible-dojot-core.git
+            name: k8s-master_2
+            namespace: dojot
+            VIM: KUBERNETES

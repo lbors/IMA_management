@@ -16,4 +16,4 @@ RUN \
     git checkout refact && \
     git pull
 
-ENTRYPOINT python3.7 IMA_management/release/adapter.py >> adapter.log
+ENTRYPOINT python3.7 IMA_management/release/adapter_ssh.py >> adapter.log

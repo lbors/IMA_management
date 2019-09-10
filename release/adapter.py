@@ -190,6 +190,19 @@ def delete_service():
         service_info.append(obj)
     return str(service_info)
 
+@app.route('/replicaScale', methods = ['POST']) 
+def delete_service():
+    yaml_content = request.data.decode('utf-8')
+
+    # carrega o YAML, "parseia" pra Json 
+    data = yaml.safe_load(yaml_content)
+    json_content = json.dumps(data)
+    json_content = json.loads(json_content)
+
+    resp = requests.patch("http://" + master_ip + ":" + str(master_port) + "/api/v1/namespaces/" + json_content['namespace'] 
+                        + "/replicasets/" + service_id['metadata']['name']) + "/scale/")
+    return 'OK'
+
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port='1010')
 
