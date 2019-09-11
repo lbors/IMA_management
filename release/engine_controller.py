@@ -54,17 +54,20 @@ def create_adapter(slice_id, slice_part_id, port, json_content):
         if str(json_content['dc-slice-part']['VIM']['vdus'][j]['vdu']['type']) == "master": 
             master_ip = str(json_content['dc-slice-part']['VIM']['vdus'][j]['vdu']['ip'])
 
-    client = docker.from_env()
-    client.containers.run("adapter_ssh:latest", detach=True, name=agent_name, ports={'1010/tcp': ('localhost', port)})
+    if json_content['dc-slice-part']['VIM']['name'] == "KUBERNETES":
+        client = docker.from_env()
+        client.containers.run("adapter_ssh_k:latest", detach=True, name=agent_name, ports={'1010/tcp': ('localhost', port)})
 
-    master_data = ssh_ip + ":" + str(ssh_port) + ":" + ssh_user + ":" + ssh_pass + ":" + str(port) + ":" + master_ip
+        master_data = ssh_ip + ":" + str(ssh_port) + ":" + ssh_user + ":" + ssh_pass + ":" + str(port) + ":" + master_ip
 
-    while True:
-        try:
-            requests.post("http://0.0.0.0:" + str(port) + "/setSSH", data = master_data)
-            break
-        except requests.exceptions.ConnectionError:
-            pass
+        while True:
+            try:
+                requests.post("http://0.0.0.0:" + str(port) + "/setSSH", data = master_data)
+                break
+            except requests.exceptions.ConnectionError:
+                pass
+    else:
+        print("OUTRO\n")
 
     print("The Adapter", agent_name, "has started")
 

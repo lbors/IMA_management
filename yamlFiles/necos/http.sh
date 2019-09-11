@@ -332,3 +332,7 @@ slices:
         name: k8s-master_2
         namespace: dojot
         VIM: KUBERNETES'
+
+curl -X GET http://localhost:5001/listAdapters
+
+sudo docker build -f Dockerfilessh -t adapter_ssh . --no-cache
