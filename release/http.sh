@@ -33,24 +33,24 @@ curl -X POST http://localhost:5001/necos/ima/start_management --header "Content-
       name: dc-slice2
   - dc-slice-part:
       VIM:
-        name: KUBERNETES
+        name: SSH
         vdus:
         - vdu:
-            description: Compute node of kubernetes cluster
+            description: Compute node of SSH cluster
             id: k8s-node2_2
             ip: 10.10.2.3
             name: k8s-node2
             type: worker
             vdu-image: k8s-dojot-template
         - vdu:
-            description: Compute node of kubernetes cluster
+            description: Compute node of SSH cluster
             id: k8s-node1_2
             ip: 10.10.2.2
             name: k8s-node1
             type: worker
             vdu-image: k8s-dojot-template
         - vdu:
-            description: Master (controller) of kubernetes cluster
+            description: Master (controller) of SSH cluster
             id: k8s-master_2
             ip: 10.10.2.1
             name: k8s-master
@@ -68,7 +68,7 @@ curl -X POST http://localhost:5001/necos/ima/start_management --header "Content-
  
 
  # Stop Dojot Slice
- curl -X POST http://localhost:5001/necos/ima/stop_management -d 'IoTService_sliced' --header "Content-Type:application/yaml"
+curl -X POST http://localhost:5001/necos/ima/stop_management -d 'IoTService_sliced' --header "Content-Type:application/yaml"
 
 
  # Start Touristic Slice

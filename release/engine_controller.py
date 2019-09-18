@@ -44,20 +44,19 @@ def create_adapter(slice_id, slice_part_id, port, json_content):
     global adapter_dict
 
     agent_name = slice_part_id + '_adapter_ssh'
-    ssh_ip = json_content['dc-slice-part']['VIM']['vim-ref']['ip-ssh']
-    ssh_port = json_content['dc-slice-part']['VIM']['vim-ref']['port-ssh']
-    ssh_user = json_content['dc-slice-part']['VIM']['vim-credential']['user-ssh']
-    ssh_pass = json_content['dc-slice-part']['VIM']['vim-credential']['password-ssh']
     master_ip = "null"
 
     for j in range(len(json_content['dc-slice-part']['VIM']['vdus'])): 
         if str(json_content['dc-slice-part']['VIM']['vdus'][j]['vdu']['type']) == "master": 
             master_ip = str(json_content['dc-slice-part']['VIM']['vdus'][j]['vdu']['ip'])
 
-    if json_content['dc-slice-part']['VIM']['name'] == "KUBERNETES":
+    if json_content['dc-slice-part']['VIM']['name'] == "SSH":
+        ssh_ip = json_content['dc-slice-part']['VIM']['vim-ref']['ip-ssh']
+        ssh_port = json_content['dc-slice-part']['VIM']['vim-ref']['port-ssh']
+        ssh_user = json_content['dc-slice-part']['VIM']['vim-credential']['user-ssh']
+        ssh_pass = json_content['dc-slice-part']['VIM']['vim-credential']['password-ssh']
         client = docker.from_env()
-        client.containers.run("adapter_ssh_k:latest", detach=True, name=agent_name, ports={'1010/tcp': ('localhost', port)})
-
+        client.containers.run("adapter_ssh:latest", detach=True, name=agent_name, ports={'1010/tcp': ('localhost', port)})
         master_data = ssh_ip + ":" + str(ssh_port) + ":" + ssh_user + ":" + ssh_pass + ":" + str(port) + ":" + master_ip
 
         while True:
@@ -66,37 +65,84 @@ def create_adapter(slice_id, slice_part_id, port, json_content):
                 break
             except requests.exceptions.ConnectionError:
                 pass
-    else:
-        print("OUTRO\n")
+        print("The Adapter", agent_name, "has started")
 
-    print("The Adapter", agent_name, "has started")
-
-    if slice_id in adapter_dict:
-            adapter_dict[slice_id].update({ 
+        if slice_id in adapter_dict:
+                adapter_dict[slice_id].update({ 
+                        slice_part_id: ({
+                            "port":str(port),
+                            "adapter_ssh_name": agent_name,
+                            'ssh_ip': str(ssh_ip),
+                            'ssh_port': str(ssh_port),
+                            'ssh_user': str(ssh_user),
+                            'ssh_pass': str(ssh_pass),
+                            'master_ip': str(master_ip)
+                        })
+                })
+        else:
+            adapter_dict.update({
+                slice_id: {
                     slice_part_id: ({
-                        "port":str(port),
-                        "adapter_ssh_name": agent_name,
+                        'port': str(port),
+                        'adapter_ssh_name': agent_name,
                         'ssh_ip': str(ssh_ip),
                         'ssh_port': str(ssh_port),
                         'ssh_user': str(ssh_user),
                         'ssh_pass': str(ssh_pass),
                         'master_ip': str(master_ip)
-                    })
-            })
+                        })
+                    }
+                })
+    elif json_content['dc-slice-part']['VIM']['name'] == "KUBERNETES":
+        agent_name = slice_part_id + '_adapter_k8s'
+        client = docker.from_env()
+        client.containers.run("adapter_k8s:latest", detach=True, name=agent_name, ports={'1010/tcp': ('localhost', port)})
+        temp_ip = str(json_content['dc-slice-part']['VIM']['vim-ref']['ip-api'])
+        temp_port = json_content['dc-slice-part']['VIM']['vim-ref']['port-api']
+        master_data = temp_ip + ":" + str(temp_port)
+
+        while True:
+            try:
+                requests.post("http://0.0.0.0:" + str(port) + "/setIPandPort", data = master_data)
+                break
+            except requests.exceptions.ConnectionError:
+                pass
+
+        print("The Adapter", agent_name, "has started")
+
+        if slice_id in adapter_dict:
+                adapter_dict[slice_id].update({ 
+                        slice_part_id: ({
+                            "adapter_api_name":agent_name, 
+                            "port":str(port)
+                        })
+                })
+        else:
+            adapter_dict.update({
+                slice_id: {
+                    slice_part_id: ({
+                        "adapter_api_name":agent_name, 
+                        "port":str(port)
+                        })
+                    }
+                })
+
+    elif json_content['dc-slice-part']['VIM']['name'] == "SWARM":
+        agent_name = slice_part_id + '_adapter_swm'
+        client = docker.from_env()
+        client.containers.run("adapter_swm:latest", detach=True, name=agent_name, ports={'1010/tcp': ('localhost', port)})
+        # master_data = ????
+
+        # while True:
+        #     try:
+        #         requests.post("http://0.0.0.0:" + str(port) + "/setIPandPort", data = master_data)
+        #         break
+        #     except requests.exceptions.ConnectionError:
+        #         pass
+
+        print("The Adapter", agent_name, "has started")
     else:
-        adapter_dict.update({
-            slice_id: {
-                slice_part_id: ({
-                    'port': str(port),
-                    'adapter_ssh_name': agent_name,
-                    'ssh_ip': str(ssh_ip),
-                    'ssh_port': str(ssh_port),
-                    'ssh_user': str(ssh_user),
-                    'ssh_pass': str(ssh_pass),
-                    'master_ip': str(master_ip)
-                    })
-                }
-            })
+        print("Invalid VIM name. Must be 'KUBERNETES', 'SWARM' or 'SSH'.")
 
 def start_slice_adapterv2(json_content):
     global adapter_dict

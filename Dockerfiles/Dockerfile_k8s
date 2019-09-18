@@ -16,4 +16,4 @@ RUN \
     git checkout production && \
     git pull
 
-ENTRYPOINT python3.7 IMA_management/release/adapters/adapter_ssh_k.py >> adapter.log
+ENTRYPOINT python3.7 IMA_management/release/adapters/adapter_k8s.py >> adapter.log

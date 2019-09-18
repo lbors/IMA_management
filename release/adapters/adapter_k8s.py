@@ -24,7 +24,7 @@ def set_IP():
 
 @app.route('/')
 def default_options():
-    return 'Welcome to the adapter X of Resource and VM Management'
+    return "Welcome to the Kubernetes' adapter of Resource and VM Management"
 
 # slice_id, slice_part_id e namespace sao passados como argumentos
 @app.route('/listPods', methods = ['POST']) 
@@ -139,7 +139,7 @@ def create_service():
         if r["status"] == "Failure":
             try:
                 obj = "Service " + service_id['metadata']['name'] + " could not be initialized. Error " + str(r["code"]) + ": " + r["message"]
-            except Exception as e:
+            except Exception:
                 obj = "A nameless service could not be initialized. Error " + str(r["code"]) + ": " + r["message"]
         else:
             obj = "Service " + service_id['metadata']['name'] + " initialized successfully."
@@ -183,25 +183,25 @@ def delete_service():
         if r["status"] == "Failure":
             try:
                 obj = "Service " + service_id['metadata']['name'] + " could not be deleted. Error " + str(r["code"]) + ": " + r["message"]
-            except Exception as e:
+            except Exception:
                 obj = "A nameless service could not be deleted. Error " + str(r["code"]) + ": " + r["message"]
         else:
             obj = "Service " + service_id['metadata']['name'] + " deleted successfully."
         service_info.append(obj)
     return str(service_info)
 
-@app.route('/replicaScale', methods = ['POST']) 
-def delete_service():
-    yaml_content = request.data.decode('utf-8')
+# @app.route('/replicaScale', methods = ['POST']) 
+# def replica_scale():
+#     yaml_content = request.data.decode('utf-8')
 
-    # carrega o YAML, "parseia" pra Json 
-    data = yaml.safe_load(yaml_content)
-    json_content = json.dumps(data)
-    json_content = json.loads(json_content)
+#     # carrega o YAML, "parseia" pra Json 
+#     data = yaml.safe_load(yaml_content)
+#     json_content = json.dumps(data)
+#     json_content = json.loads(json_content)
 
-    resp = requests.patch("http://" + master_ip + ":" + str(master_port) + "/api/v1/namespaces/" + json_content['namespace'] 
-                        + "/replicasets/" + service_id['metadata']['name']) + "/scale/")
-    return 'OK'
+#     resp = requests.patch("http://" + master_ip + ":" + str(master_port) + "/api/v1/namespaces/" + json_content['namespace'] 
+#                         + "/replicasets/" + service_id['metadata']['name'] + "/scale/")
+#     return 'OK'
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port='1010')
