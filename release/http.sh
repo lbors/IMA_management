@@ -6,7 +6,7 @@ curl -X POST http://localhost:5001/necos/ima/start_management --header "Content-
   slice-parts:
   - dc-slice-part:
       VIM:
-        name: KUBERNETES
+        name: SSH
         vdus:
         - vdu:
             description: Master (controller) of kubernetes cluster
@@ -33,7 +33,7 @@ curl -X POST http://localhost:5001/necos/ima/start_management --header "Content-
       name: dc-slice2
   - dc-slice-part:
       VIM:
-        name: SSH
+        name: KUBERNETES
         vdus:
         - vdu:
             description: Compute node of SSH cluster
@@ -52,7 +52,7 @@ curl -X POST http://localhost:5001/necos/ima/start_management --header "Content-
         - vdu:
             description: Master (controller) of SSH cluster
             id: k8s-master_2
-            ip: 10.10.2.1
+            ip: 200.18.102.28
             name: k8s-master
             type: master
             vdu-image: k8s-dojot-template
@@ -60,9 +60,9 @@ curl -X POST http://localhost:5001/necos/ima/start_management --header "Content-
           password-ssh: necos
           user-ssh: root
         vim-ref:
-          ip-api: 143.106.11.131
+          ip-api: 200.18.102.28
           ip-ssh: 143.106.11.131
-          port-api: 21143
+          port-api: 8080
           port-ssh: 22143
       name: dc-slice1'
  
@@ -336,3 +336,120 @@ slices:
 curl -X GET http://localhost:5001/listAdapters
 
 sudo docker build -f Dockerfilessh -t adapter_ssh . --no-cache
+
+
+# SERVICE DEPLOY SSH AND K8S SIMULTANEOUSLY
+
+curl -X POST http://localhost:5001/necos/ima/start_management --header "Content-type:application/yaml" \
+-d 'slice:
+  id: Dojot
+  slice-parts:
+  - dc-slice-part:
+      VIM:
+        name: SSH
+        vdus:
+        - vdu:
+            description: Master (controller) of kubernetes cluster
+            id: k8s-master_5
+            ip: 10.10.5.1
+            name: k8s-master
+            type: master
+            vdu-image: k8s-dojot-template
+        - vdu:
+            description: Compute node of kubernetes cluster
+            id: k8s-node_5
+            ip: 10.10.5.2
+            name: k8s-node
+            type: worker
+            vdu-image: k8s-dojot-min-template
+        vim-credential:
+          password-ssh: F
+          user-ssh: F
+        vim-ref:
+          ip-api: 10.1.0.3
+          ip-ssh: 200.18.102.19
+          port-api: 21100
+          port-ssh: 22
+      name: dc-slice2
+  - dc-slice-part:
+      VIM:
+        name: KUBERNETES
+        vdus:
+        - vdu:
+            description: Compute node of SSH cluster
+            id: k8s-node2_2
+            ip: 10.10.2.3
+            name: k8s-node2
+            type: worker
+            vdu-image: k8s-dojot-template
+        - vdu:
+            description: Compute node of SSH cluster
+            id: k8s-node1_2
+            ip: 10.10.2.2
+            name: k8s-node1
+            type: worker
+            vdu-image: k8s-dojot-template
+        - vdu:
+            description: Master (controller) of SSH cluster
+            id: k8s-master_2
+            ip: 200.18.102.28
+            name: k8s-master
+            type: master
+            vdu-image: k8s-dojot-template
+        vim-credential:
+          password-ssh: necos
+          user-ssh: root
+        vim-ref:
+          ip-api: 200.18.102.28
+          ip-ssh: 143.106.11.131
+          port-api: 8080
+          port-ssh: 22143
+      name: dc-slice1'
+
+curl -X POST http://localhost:5001/necos/ima/deploy_service --header "Content-type:application/text" \
+-d '
+slices:
+    sliced:
+      id: Dojot
+      slice-parts:
+      - dc-slice-part: null
+        name: dc-slice2
+        vdus:
+          - vdu:
+            commands:
+              - git clone https://github.com/LABORA-INF-UFG/NECOS-ansible-dojot-core.git
+            name: k8s-master_2
+            namespace: dojot
+            VIM: SSH
+      - dc-slice-part: null
+        name: dc-slice1
+        vdus:
+          - vdu:
+            name: k8s-master_2
+            namespace: dojot
+            VIM: KUBERNETES
+            service_info:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: nginx
+                labels:
+                  name: nginx
+              spec:
+                containers:
+                - name: nginx
+                  image: nginx
+                  ports:
+                    - containerPort: 443
+                  volumeMounts:
+                    - mountPath: "/etc/nginx/"
+                      name: "nginx-conf"
+                    - mountPath: "/usr/local/etc/nginx/ssl"
+                      name: "ssl-certs"
+                volumes:
+                  - name: "nginx-conf"
+                    secret:
+                      secretName: "nginx.conf"
+                  - name: "ssl-certs"
+                    secret:
+              secretName: "nginx-ssl-certs"'

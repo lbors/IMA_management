@@ -224,11 +224,15 @@ def stop_management():
     threads = []    
 
     for slice_part in adapter_dict[post_data]:
-        if adapter_dict[post_data][slice_part]["adapter_ssh_name"] != "null":
+        if "adapter_ssh_name" in adapter_dict[post_data][slice_part]:
             t = threading.Thread(target=delete_container,args=(adapter_dict[post_data][slice_part]["adapter_ssh_name"],))
             threads.append(t)
             t.start()
-            
+        elif "adapter_api_name" in adapter_dict[post_data][slice_part]: 
+            t = threading.Thread(target=delete_container,args=(adapter_dict[post_data][slice_part]["adapter_api_name"],))
+            threads.append(t)
+            t.start()
+
     for t in threads:
         t.join()
 
@@ -237,7 +241,6 @@ def stop_management():
     return str('The slice ' + post_data + ' has been deleted.')
 
 # SERVICES ########################################################################
-
 @app.route('/necos/ima/deploy_service', methods = ['POST']) 
 def create_service():
     data = yaml.safe_load(request.data.decode('utf-8'))
@@ -249,10 +252,16 @@ def create_service():
         adapter_port = adapter_dict[slice_id][str(slices_iterator['name'])]['port']
 
         for service_it in slices_iterator['vdus']:
-            requests.post("http://0.0.0.0:" + str(adapter_port) + "/createService", data = json.dumps(service_it['commands']))
+            if service_it['VIM'] == "SSH":
+                requests.post("http://0.0.0.0:" + str(adapter_port) + "/createService", data = json.dumps(service_it['commands']))
+            elif service_it['VIM'] == "KUBERNETES":
+                # adapter_port = adapter_dict[json_content['slice_id']][service_it['slice_part_id']]['port']
+                resp = requests.post("http://0.0.0.0:" + str(adapter_port) + "/createService", data = json.dumps(service_it))
+                # parsed_resp = resp.content.decode('utf-8')
+                # services_status.append(parsed_resp)
 
     if slice_id == 'IoTService_sliced':
-        time.sleep(30)
+        time.sleep(1)
             
     # return "Commands outputs = " + ('\n'.join(services_status))
     return 'The Service for ' + slice_id + ' was created!'
