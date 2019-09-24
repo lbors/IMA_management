@@ -43,14 +43,13 @@ def list_adapters():
 def create_adapter(slice_id, slice_part_id, port, json_content):
     global adapter_dict
 
-    agent_name = slice_part_id + '_adapter_ssh'
     master_ip = "null"
-
     for j in range(len(json_content['dc-slice-part']['VIM']['vdus'])): 
         if str(json_content['dc-slice-part']['VIM']['vdus'][j]['vdu']['type']) == "master": 
             master_ip = str(json_content['dc-slice-part']['VIM']['vdus'][j]['vdu']['ip'])
 
     if json_content['dc-slice-part']['VIM']['name'] == "SSH":
+        agent_name = slice_part_id + '_adapter_ssh'
         ssh_ip = json_content['dc-slice-part']['VIM']['vim-ref']['ip-ssh']
         ssh_port = json_content['dc-slice-part']['VIM']['vim-ref']['port-ssh']
         ssh_user = json_content['dc-slice-part']['VIM']['vim-credential']['user-ssh']
@@ -74,9 +73,9 @@ def create_adapter(slice_id, slice_part_id, port, json_content):
                             "adapter_ssh_name": agent_name,
                             'ssh_ip': str(ssh_ip),
                             'ssh_port': str(ssh_port),
-                            'ssh_user': str(ssh_user),
-                            'ssh_pass': str(ssh_pass),
-                            'master_ip': str(master_ip)
+                            # 'ssh_user': str(ssh_user),
+                            # 'ssh_pass': str(ssh_pass),
+                            # 'master_ip': str(master_ip)
                         })
                 })
         else:
@@ -87,9 +86,9 @@ def create_adapter(slice_id, slice_part_id, port, json_content):
                         'adapter_ssh_name': agent_name,
                         'ssh_ip': str(ssh_ip),
                         'ssh_port': str(ssh_port),
-                        'ssh_user': str(ssh_user),
-                        'ssh_pass': str(ssh_pass),
-                        'master_ip': str(master_ip)
+                        # 'ssh_user': str(ssh_user),
+                        # 'ssh_pass': str(ssh_pass),
+                        # 'master_ip': str(master_ip)
                         })
                     }
                 })

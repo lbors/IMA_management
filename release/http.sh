@@ -363,8 +363,8 @@ curl -X POST http://localhost:5001/necos/ima/start_management --header "Content-
             type: worker
             vdu-image: k8s-dojot-min-template
         vim-credential:
-          password-ssh: F
-          user-ssh: F
+          password-ssh: jasonmkx
+          user-ssh: williamgdo
         vim-ref:
           ip-api: 10.1.0.3
           ip-ssh: 200.18.102.19
@@ -421,6 +421,47 @@ slices:
             name: k8s-master_2
             namespace: dojot
             VIM: SSH
+      - dc-slice-part: null
+        name: dc-slice1
+        vdus:
+          - vdu:
+            name: k8s-master_2
+            namespace: dojot
+            VIM: KUBERNETES
+            service_info:
+              apiVersion: v1
+              kind: Pod
+              metadata:
+                name: nginx
+                labels:
+                  name: nginx
+              spec:
+                containers:
+                - name: nginx
+                  image: nginx
+                  ports:
+                    - containerPort: 443
+                  volumeMounts:
+                    - mountPath: "/etc/nginx/"
+                      name: "nginx-conf"
+                    - mountPath: "/usr/local/etc/nginx/ssl"
+                      name: "ssl-certs"
+                volumes:
+                  - name: "nginx-conf"
+                    secret:
+                      secretName: "nginx.conf"
+                  - name: "ssl-certs"
+                    secret:
+              secretName: "nginx-ssl-certs"'
+
+
+# deletarrrrrrrrrrrrrrrrrrrrrrrrrr
+curl -X POST http://localhost:5001/necos/ima/deploy_service --header "Content-type:application/text" \
+-d '
+slices:
+    sliced:
+      id: Dojot
+      slice-parts:
       - dc-slice-part: null
         name: dc-slice1
         vdus:
