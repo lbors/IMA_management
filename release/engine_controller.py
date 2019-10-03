@@ -197,11 +197,15 @@ def create_service():
     slice_id = json_content['slices']['sliced']['id']
     for slices_iterator in json_content['slices']['sliced']['slice-parts']:
         adapter_port = adapter_dict[slice_id][str(slices_iterator['name'])]['port']
-
+        print("\t" + str(slices_iterator['name']) + ":")
+        
         for service_it in slices_iterator['vdus']:
+            print("Executing the commands: ")
+            print(str(json.dumps(service_it['commands'], indent=2)))
             requests.post("http://0.0.0.0:" + str(adapter_port) + "/createService", data = json.dumps(service_it['commands']))
 
     if slice_id == 'IoTService_sliced':
+        print("Waiting for commands to execute...")
         time.sleep(30)
             
     # return "Commands outputs = " + ('\n'.join(services_status))
