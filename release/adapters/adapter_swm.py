@@ -10,7 +10,7 @@ app = Flask(__name__)
 master_port = 8080
 master_ip = '1.1.1.1'
 
-@app.route('/setIPandPort', methods = ['POST'])
+@app.route('/setInitialConfig', methods = ['POST'])
 def set_IP():
     global master_ip, master_port
     post_data = request.data.decode('utf-8')
@@ -18,8 +18,9 @@ def set_IP():
     master_ip = post_data[0]
     master_port = post_data[1]
 
-    print("IP do master: " + master_ip)
-    print("Porta do master: " + master_port)
+    print("IP do master: " + master_ip + "\tPorta do master: " + master_port)
+    client = docker.from_env()
+    client.swarm.join(remote_addrs = [str(master_ip) + ':' + str(master_port)], join_token = post_data[2])
     return 'OK'
 
 @app.route('/')

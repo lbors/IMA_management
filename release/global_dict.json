@@ -1,1 +1,1 @@
-{"Dojot": {"dc-slice1": {"adapter_api_name": "dc-slice1_adapter_k8s", "port": "52915"}, "dc-slice2": {"port": "51273", "adapter_ssh_name": "dc-slice2_adapter_ssh", "ssh_ip": "200.18.102.19", "ssh_port": "22"}}}
+{}

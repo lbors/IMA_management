@@ -130,16 +130,39 @@ def create_adapter(slice_id, slice_part_id, port, json_content):
         agent_name = slice_part_id + '_adapter_swm'
         client = docker.from_env()
         client.containers.run("adapter_swm:latest", detach=True, name=agent_name, ports={'1010/tcp': ('localhost', port)})
-        # master_data = ????
+        temp_ip = str(json_content['dc-slice-part']['VIM']['vim-ref']['ip-api'])
+        temp_port = json_content['dc-slice-part']['VIM']['vim-ref']['port-api']
+        temp_token = json_content['dc-slice-part']['VIM']['vim-credential']['token']
+        initial_config = temp_ip + ":" + str(temp_port) + ":" + temp_token
 
-        # while True:
-        #     try:
-        #         requests.post("http://0.0.0.0:" + str(port) + "/setIPandPort", data = master_data)
-        #         break
-        #     except requests.exceptions.ConnectionError:
-        #         pass
+        while True:
+            try:
+                requests.post("http://0.0.0.0:" + str(port) + "/setInitialConfig", data = initial_config)
+                break
+            except requests.exceptions.ConnectionError:
+                pass
+
+        requests.post("http://0.0.0.0:" + str(port) + "/setInitialConfig", data = initial_config)
+        requests.post("http://0.0.0.0:" + str(port) + "/setInitialConfig", data = initial_config)
 
         print("The Adapter", agent_name, "has started")
+
+        if slice_id in adapter_dict:
+                adapter_dict[slice_id].update({ 
+                        slice_part_id: ({
+                            "adapter_api_name":agent_name, 
+                            "port":str(port)
+                        })
+                })
+        else:
+            adapter_dict.update({
+                slice_id: {
+                    slice_part_id: ({
+                        "adapter_api_name":agent_name, 
+                        "port":str(port)
+                        })
+                    }
+                })
     else:
         print("Invalid VIM name. Must be 'KUBERNETES', 'SWARM' or 'SSH'.")
 
