@@ -252,15 +252,18 @@ def create_service():
 
         for service_it in slices_iterator['vdus']:
             if service_it['VIM'] == "SSH":
+                print("Executing the commands: ")
+                print(str(json.dumps(service_it['commands'], indent=2)))
                 requests.post("http://0.0.0.0:" + str(adapter_port) + "/createService", data = json.dumps(service_it['commands']))
             elif service_it['VIM'] == "KUBERNETES":
                 # adapter_port = adapter_dict[json_content['slice_id']][service_it['slice_part_id']]['port']
+                print("Creating a K8s service...")
                 resp = requests.post("http://0.0.0.0:" + str(adapter_port) + "/createService", data = json.dumps(service_it))
                 # parsed_resp = resp.content.decode('utf-8')
                 # services_status.append(parsed_resp)
 
     if slice_id == 'IoTService_sliced':
-        time.sleep(1)
+        time.sleep(1)       # MUDAR PRA 30 NO FIM DA IMPLEMENTACAO (?)
             
     # return "Commands outputs = " + ('\n'.join(services_status))
     return 'The Service for ' + slice_id + ' was created!'
