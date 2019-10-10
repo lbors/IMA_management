@@ -209,5 +209,4 @@ if __name__ == '__main__':
 
 
 #TODO 
-#- melhorar leitura
-#- deixar bonito???????
+#- ATUALIZAR FUNCOES (exemplo: ListServices recebe nome de arquivo como parametro, replicaScale nao funciona corretamente, etc)
