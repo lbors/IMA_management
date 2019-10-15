@@ -6,9 +6,22 @@ import docker
 import json
 import time
 
+# HABILITAR API DO SWARM:
+# 1- corrigir data e hora do master (precisa de confirmacao)
+    # sudo unlink /etc/localtime
+    # sudo ln -s /usr/share/zoneinfo/America/Sao_Paulo /etc/localtime
+    # timedatectl 
+# 2- editar arquivo no leader
+    # sudo vim /lib/systemd/system/docker.service
+        # ExecStart=/usr/bin/dockerd -H fd:// -H=tcp://0.0.0.0:5555 [qualquer porta que quiser abrir]
+    # sudo systemctl reload
+    # sudo systemctl daemon-reload
+    # sudo service docker restart
+    # sudo docker ps
+
 app = Flask(__name__)
-master_port = 8080
-master_ip = '1.1.1.1'
+master_port = -1
+master_ip = 'null'
 
 @app.route('/setInitialConfig', methods = ['POST'])
 def set_config():
@@ -31,54 +44,42 @@ def set_config():
 def get_nodes():
     resp = requests.get("http://" + master_ip + ":" + str(master_port) + "/nodes")
     parsed = json.loads(resp.content)
-    print(json.dumps(parsed, indent=2))
-    return str(resp.status_code)
+    return str(json.dumps(parsed, indent=2))
 
 @app.route('/inspectSwarm', methods = ['GET'])
 def inspect_swarm():
     resp = requests.get("http://" + master_ip + ":" + str(master_port) + "/swarm")
     parsed = json.loads(resp.content)
-    print(json.dumps(parsed, indent=2))
-    return str(resp.status_code)
+    return str(json.dumps(parsed, indent=2))
 
 @app.route('/listServices', methods = ['GET']) 
 def list_services():
-    # ler arquivo de parametro
-    file_name = request.data.decode('utf-8')
-    file = open(file_name, "r")
-    yaml_content = file.read()
-    file.close()
-    data = yaml.safe_load(yaml_content) # parsear pra yaml
-
-    resp = requests.get("http://" + master_ip + ":" + str(master_port) + "/api/v1/namespaces/" + data['namespace'] + "/services/")
+    resp = requests.get("http://" + master_ip + ":" + str(master_port) + "/services")
     parsed = json.loads(resp.content)
-    print(json.dumps(parsed, indent=2))
-
-    return str(resp.status_code)
+    return str(json.dumps(parsed, indent=2))
 
 @app.route('/deployService', methods = ['POST'])
 def deploy_service():
-    yaml_content = request.data.decode('utf-8')
+    data = request.data.decode('utf-8')
 
     # carrega o YAML, "parseia" pra Json 
-    data = yaml.safe_load(yaml_content)
-    json_content = json.dumps(data)
-    json_content = json.loads(json_content)
+    # data = yaml.safe_load(yaml_content)
+    # json_content = json.dumps(data)
+    # json_content = json.loads(json_content)
 
-    service_info = []
+    json_content = json.loads(data)
 
-    for service_id in json_content['service_info']:
-        resp = requests.post("http://" + master_ip + ":" + str(master_port) + " /services/create", data = json.dumps(service_id))
-        r = json.loads(resp.content.decode('utf-8'))
-        if r["status"] == "Failure":
-            try:
-                obj = "Service " + service_id['metadata']['name'] + " could not be initialized. Error " + str(r["code"]) + ": " + r["message"]
-            except Exception:
-                obj = "A nameless service could not be initialized. Error " + str(r["code"]) + ": " + r["message"]
-        else:
-            obj = "Service " + service_id['metadata']['name'] + " initialized successfully."
-        service_info.append(obj)
-    return str(service_info)
+    resp = requests.post("http://" + master_ip + ":" + str(master_port) + "/services/create", data = json.dumps(json_content))
+    r = json.loads(resp.content.decode('utf-8'))
+    # if r["status"] == "Failure":
+    #     try:
+    #         msg = "The service could not be initialized. Error " + str(r["code"]) + ": " + r["message"]
+    #     except Exception:
+    #         msg = "A nameless service could not be initialized. Error " + str(r["code"]) + ": " + r["message"]
+    # else:
+    #     msg = "The service initialized successfully."
+    return str(r)
+    # return ('OK')
 
 @app.route('/')
 def default_options():
