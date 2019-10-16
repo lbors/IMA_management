@@ -128,8 +128,8 @@ def create_adapter(slice_id, slice_part_id, port, json_content):
 
     elif json_content['dc-slice-part']['VIM']['name'] == "SWARM":
         agent_name = slice_part_id + '_adapter_swm'
-        # client = docker.from_env()
-        # client.containers.run("adapter_swm:latest", detach=True, name=agent_name, ports={'1010/tcp': ('localhost', port)})
+        client = docker.from_env()
+        client.containers.run("adapter_swm:latest", detach=True, name=agent_name, ports={'1010/tcp': ('localhost', port)})
         temp_ip = str(json_content['dc-slice-part']['VIM']['vim-ref']['ip-api'])
         temp_port = json_content['dc-slice-part']['VIM']['vim-ref']['port-api']
         temp_token = json_content['dc-slice-part']['VIM']['vim-credential']['token']
@@ -137,8 +137,8 @@ def create_adapter(slice_id, slice_part_id, port, json_content):
 
         while True:
             try:
-                # requests.post("http://0.0.0.0:" + str(port) + "/setInitialConfig", data = initial_config)
-                requests.post("http://0.0.0.0:" + "1010" + "/setInitialConfig", data = initial_config)
+                requests.post("http://0.0.0.0:" + str(port) + "/setInitialConfig", data = initial_config)
+                # requests.post("http://0.0.0.0:" + "1010" + "/setInitialConfig", data = initial_config)
                 break
             except requests.exceptions.ConnectionError:
                 pass
