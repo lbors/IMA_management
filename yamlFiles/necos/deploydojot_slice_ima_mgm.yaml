@@ -83,10 +83,9 @@ slice:
         vim-credential:
           password-ssh: admin
           user-ssh: admin
-          token: SWMTKN-1-5issnxvpda1kteftot6jii0upjb90adocupazo50otowygvt16-abhw45za4k9k5817dlpo0vn6q
         vim-ref:
           ip-api: 192.168.50.2
           ip-ssh: 10.1.0.3
-          port-api: 2377
+          port-api: 5555
           port-ssh: 22100
       name: dc-slice3

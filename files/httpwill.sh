@@ -1,3 +1,8 @@
+comandos uteis:
+sudo docker run -d -p 9000:9000 -v /var/run/docker.sock:/var/run/docker.sock -v portainer_data:/data portainer/portainer
+sudo docker build -t adapterk8s .  
+sudo docker build -f Dockerfilessh -t adapter_ssh_k . --no-cache
+
 # retorna uma string de boas vindas
 curl --request GET http://0.0.0.0:5001/
 
@@ -115,10 +120,7 @@ curl -X POST \
   -d 'Telemarketing'
 
 
-comandos uteis:
-sudo docker run -d -p 9000:9000 -v /var/run/docker.sock:/var/run/docker.sock -v portainer_data:/data portainer/portainer
-sudo docker build -t adapterk8s .  
-sudo docker build -f Dockerfilessh -t adapter_ssh_k . --no-cache
+
 
 
 # CURL para crir um cluster local
