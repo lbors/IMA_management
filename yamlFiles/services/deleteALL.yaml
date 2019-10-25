@@ -1,0 +1,7 @@
+slices:
+  sliced:
+    id: IoTService_sliced
+    slice-parts:
+      - dc-slice-part:
+        name: dc-slice3
+        service-id: "web"

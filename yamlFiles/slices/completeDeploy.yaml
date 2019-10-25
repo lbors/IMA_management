@@ -1,0 +1,93 @@
+# this will deploy 3 slice parts with all currently adapter types (SSH, SWARM, K8S)
+slice:
+  id: IoTService_sliced
+  slice-parts:
+  - dc-slice-part:
+      VIM:
+        name: SSH
+        vdus:
+        - vdu:
+            description: Compute node of a cluster
+            id: node2_2
+            ip: 10.10.2.3
+            name: node2
+            type: worker
+            vdu-image: dojot-template
+        - vdu:
+            description: Compute node of a cluster
+            id: node1_2
+            ip: 10.10.2.2
+            name: node1
+            type: worker
+            vdu-image: dojot-template
+        - vdu:
+            description: Master (controller) of a cluster
+            id: master_2
+            ip: 200.18.102.28
+            name: master
+            type: master
+            vdu-image: dojot-template
+        vim-credential:
+          password-ssh: admin
+          user-ssh: admin
+        vim-ref:
+          ip-api: 200.18.102.28
+          ip-ssh: 143.106.11.131
+          port-api: 8080
+          port-ssh: 22143
+      name: dc-slice1
+  - dc-slice-part:
+      VIM:
+        name: KUBERNETES
+        vdus:
+        - vdu:
+            description: Master (controller) of kubernetes cluster
+            id: k8s-master_5
+            ip: 10.10.5.1
+            name: k8s-master
+            type: master
+            vdu-image: k8s-dojot-template
+        - vdu:
+            description: Compute node of kubernetes cluster
+            id: k8s-node_5
+            ip: 10.10.5.2
+            name: k8s-node
+            type: worker
+            vdu-image: k8s-dojot-min-template
+        vim-credential:
+          password-ssh: admin
+          user-ssh: admin
+        vim-ref:
+          ip-api: 10.1.0.3
+          ip-ssh: 10.1.0.3
+          port-api: 22222
+          port-ssh: 22221
+      name: dc-slice2
+  - dc-slice-part:
+      VIM:
+        name: SWARM
+        vdus:
+        - vdu:
+            description: Master (controller) of Docker Swarm cluster
+            id: swarm-master_5
+            ip: 10.10.5.1
+            name: swarm-master
+            type: master
+            vdu-image: swarm-dojot-template
+        - vdu:
+            description: Compute worker of Docker Swarm cluster
+            id: swarm-worker
+            ip: 10.10.5.2
+            name: swarm-worker
+            type: worker
+            vdu-image: swarm-dojot-min-template
+        vim-credential:
+          password-ssh: admin
+          user-ssh: admin
+          token: SWMTKN-1-5issnxvpda1kteftot6jii0upjb90adocupazo50otowygvt16-abhw45za4k9k5817dlpo0vn6q
+        vim-ref:
+          ip-api: 192.168.50.2
+          ip-ssh: 10.1.0.3
+          port-api: 5555
+          port-ssh: 22100
+      name: dc-slice3

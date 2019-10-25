@@ -71,6 +71,7 @@ def create_adapter(slice_id, slice_part_id, port, json_content):
                         slice_part_id: ({
                             "port":str(port),
                             "adapter_ssh_name": agent_name,
+                            "type": "SSH",
                             'ssh_ip': str(ssh_ip),
                             'ssh_port': str(ssh_port),
                             # 'ssh_user': str(ssh_user),
@@ -84,6 +85,7 @@ def create_adapter(slice_id, slice_part_id, port, json_content):
                     slice_part_id: ({
                         'port': str(port),
                         'adapter_ssh_name': agent_name,
+                        "type": "SSH",
                         'ssh_ip': str(ssh_ip),
                         'ssh_port': str(ssh_port),
                         # 'ssh_user': str(ssh_user),
@@ -113,6 +115,7 @@ def create_adapter(slice_id, slice_part_id, port, json_content):
                 adapter_dict[slice_id].update({ 
                         slice_part_id: ({
                             "adapter_api_name":agent_name, 
+                            "type": "KUBERNETES",
                             "port":str(port)
                         })
                 })
@@ -121,6 +124,7 @@ def create_adapter(slice_id, slice_part_id, port, json_content):
                 slice_id: {
                     slice_part_id: ({
                         "adapter_api_name":agent_name, 
+                        "type": "KUBERNETES",
                         "port":str(port)
                         })
                     }
@@ -132,8 +136,7 @@ def create_adapter(slice_id, slice_part_id, port, json_content):
         client.containers.run("adapter_swm:latest", detach=True, name=agent_name, ports={'1010/tcp': ('localhost', port)})
         temp_ip = str(json_content['dc-slice-part']['VIM']['vim-ref']['ip-api'])
         temp_port = json_content['dc-slice-part']['VIM']['vim-ref']['port-api']
-        temp_token = json_content['dc-slice-part']['VIM']['vim-credential']['token']
-        initial_config = temp_ip + ":" + str(temp_port) + ":" + temp_token
+        initial_config = temp_ip + ":" + str(temp_port)
 
         while True:
             try:
@@ -149,6 +152,7 @@ def create_adapter(slice_id, slice_part_id, port, json_content):
                 adapter_dict[slice_id].update({ 
                         slice_part_id: ({
                             "adapter_api_name":agent_name, 
+                            "type": "SWARM",
                             "port":str(port)
                         })
                 })
@@ -157,6 +161,7 @@ def create_adapter(slice_id, slice_part_id, port, json_content):
                 slice_id: {
                     slice_part_id: ({
                         "adapter_api_name":agent_name, 
+                        "type": "SWARM",
                         "port":str(port)
                         })
                     }
@@ -282,31 +287,47 @@ def create_service():
                 resp = requests.post("http://0.0.0.0:" + str(adapter_port) + "/createService", data = json.dumps(service_it))
                 # parsed_resp = resp.content.decode('utf-8')
                 # services_status.append(parsed_resp)
-
-    if slice_id == 'IoTService_sliced':
-        time.sleep(1)       # MUDAR PRA 30 NO FIM DA IMPLEMENTACAO (?)
+            elif service_it['VIM'] == "SWARM":
+                print("Creating a docker swarm service...")
+                resp = requests.post("http://0.0.0.0:" + str(adapter_port) + "/deployService", data = json.dumps(service_it))
+                # se criar duas vezes ele faz um update
+            else:
+                print("Invalid VIM name. Must be 'KUBERNETES', 'SWARM' or 'SSH'.")
+    # if slice_id == 'IoTService_sliced':
+    #     time.sleep(30)       # MUDAR PRA 30 NO FIM DA IMPLEMENTACAO (?)
             
     # return "Commands outputs = " + ('\n'.join(services_status))
     return 'The Service for ' + slice_id + ' was created!'
 
-@app.route('/deleteService', methods = ['POST']) 
+@app.route('/necos/ima/deleteService', methods = ['POST']) 
 def delete_service():
-    # carrega o body do POST e "parseia" pra Json  
     data = yaml.safe_load(request.data.decode('utf-8'))
     json_content = json.dumps(data)
     json_content = json.loads(json_content)
-    services_status = []
 
-    for service_it in json_content['slice_parts']:
-        # pra cada slice_part do yaml vai adicionar N servicos, mas em apenas UM namespace
-        adapter_port = adapter_dict[json_content['slice_id']][service_it['slice_part_id']]['port']
-        resp = requests.post("http://0.0.0.0:" + str(adapter_port) + "/deleteService", data = json.dumps(service_it))
-        parsed_resp = resp.content.decode('utf-8')
-        services_status.append(parsed_resp)
-    return ('\n'.join(services_status))
+    slice_id = json_content['slices']['sliced']['id']
+    count = 0
+    for slices_iterator in json_content['slices']['sliced']['slice-parts']:
+        adapter_port = adapter_dict[slice_id][str(slices_iterator['name'])]['port']
+        adapter_type = adapter_dict[slice_id][str(slices_iterator['name'])]['type']
+
+        if adapter_type == "KUBERNETES":
+            print("Deleting the services:")
+            for service_it in slices_iterator['vdus']:
+                print(" " + str(['service_info']['metadata']['name']))
+                resp = requests.post("http://0.0.0.0:" + str(adapter_port) + "/deleteService", data = json.dumps(service_it))
+                count += 1
+        else:   # swarm
+            print("Deleting the services: " + str(slices_iterator['service-id']))
+            resp = requests.post("http://0.0.0.0:" + str(adapter_port) + "/deleteService", data = json.dumps(slices_iterator))
+            count += 1
+            
+    # if slice_id == 'IoTService_sliced':
+    #     time.sleep(30)      
+    return (str(count) + ' services on the ' + slice_id + ' were deleted')
 
 # FUNCAO INCOMPLETA, FALTA REVISAO
-@app.route('/updateService', methods = ['POST']) 
+@app.route('/necos/ima/updateService', methods = ['POST']) 
 def update_service():
     # carrega o body do POST e "parseia" pra Json  
     data = yaml.safe_load(request.data.decode('utf-8'))

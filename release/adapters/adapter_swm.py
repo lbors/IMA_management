@@ -34,12 +34,6 @@ def set_config():
     print("IP do master: " + master_ip + "\tPorta do master: " + master_port)
     return 'OK'
 
-# {
-#   "username": "hannibal", 
-#   "password": "xxxx",
-#   "serveraddress": "https://index.docker.io/v1/"
-# }
-
 @app.route('/getNodes', methods = ['GET'])
 def get_nodes():
     resp = requests.get("http://" + master_ip + ":" + str(master_port) + "/nodes")
@@ -61,12 +55,6 @@ def list_services():
 @app.route('/deployService', methods = ['POST'])
 def deploy_service():
     data = request.data.decode('utf-8')
-
-    # carrega o YAML, "parseia" pra Json 
-    # data = yaml.safe_load(yaml_content)
-    # json_content = json.dumps(data)
-    # json_content = json.loads(json_content)
-
     json_content = json.loads(data)
 
     resp = requests.post("http://" + master_ip + ":" + str(master_port) + "/services/create", data = json.dumps(json_content))
@@ -79,7 +67,16 @@ def deploy_service():
     # else:
     #     msg = "The service initialized successfully."
     return str(r)
-    # return ('OK')
+
+@app.route('/deleteService', methods = ['POST'])
+def deploy_service():
+    data = request.data.decode('utf-8')
+    json_content = json.loads(data)
+
+    resp = requests.delete("http://" + master_ip + ":" + str(master_port) + "/services/" + json_content[['service-id']])
+    r = json.loads(resp.content.decode('utf-8'))
+
+    return str(r)
 
 @app.route('/')
 def default_options():
