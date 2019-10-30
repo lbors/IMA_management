@@ -285,21 +285,20 @@ def create_service():
                 # adapter_port = adapter_dict[json_content['slice_id']][service_it['slice_part_id']]['port']
                 print("Creating a K8s service...")
                 resp = requests.post("http://0.0.0.0:" + str(adapter_port) + "/createService", data = json.dumps(service_it))
-                # parsed_resp = resp.content.decode('utf-8')
-                # services_status.append(parsed_resp)
+                print(resp)
             elif service_it['VIM'] == "SWARM":
-                print("Creating a docker swarm service...")
-                resp = requests.post("http://0.0.0.0:" + str(adapter_port) + "/deployService", data = json.dumps(service_it))
+                print("Creating docker swarm service: " + str(service_it['service_info']['Name']))
+                resp = requests.post("http://0.0.0.0:" + str(adapter_port) + "/deployService", data = json.dumps(service_it['service_info']))
+                print(resp)
                 # se criar duas vezes ele faz um update
             else:
                 print("Invalid VIM name. Must be 'KUBERNETES', 'SWARM' or 'SSH'.")
+
     # if slice_id == 'IoTService_sliced':
     #     time.sleep(30)       # MUDAR PRA 30 NO FIM DA IMPLEMENTACAO (?)
-            
-    # return "Commands outputs = " + ('\n'.join(services_status))
     return 'The Service for ' + slice_id + ' was created!'
 
-@app.route('/necos/ima/deleteService', methods = ['POST']) 
+@app.route('/necos/ima/delete_service', methods = ['POST']) 
 def delete_service():
     data = yaml.safe_load(request.data.decode('utf-8'))
     json_content = json.dumps(data)
@@ -316,42 +315,78 @@ def delete_service():
             for service_it in slices_iterator['vdus']:
                 print(" " + str(['service_info']['metadata']['name']))
                 resp = requests.post("http://0.0.0.0:" + str(adapter_port) + "/deleteService", data = json.dumps(service_it))
+                print(resp)
                 count += 1
         else:   # swarm
             print("Deleting the services: " + str(slices_iterator['service-id']))
             resp = requests.post("http://0.0.0.0:" + str(adapter_port) + "/deleteService", data = json.dumps(slices_iterator))
+            print(resp) 
             count += 1
             
     # if slice_id == 'IoTService_sliced':
     #     time.sleep(30)      
     return (str(count) + ' services on the ' + slice_id + ' were deleted')
 
+@app.route('/necos/ima/list_service', methods = ['POST']) 
+def get_service():
+    data = yaml.safe_load(request.data.decode('utf-8'))
+    json_content = json.dumps(data)
+    json_content = json.loads(json_content)
+
+    slice_id = json_content['slices']['sliced']['id']
+    resp = ""
+    for slices_iterator in json_content['slices']['sliced']['slice-parts']:
+        adapter_port = adapter_dict[slice_id][str(slices_iterator['name'])]['port']
+        adapter_type = adapter_dict[slice_id][str(slices_iterator['name'])]['type']
+
+        if adapter_type == "SSH":
+            return 'Could not list the services'
+        elif adapter_type == "KUBERNETES":
+            resp = requests.get("http://0.0.0.0:" + str(adapter_port) + "/??????")
+            # print(resp)
+        elif adapter_type == "SWARM":
+            resp = requests.get("http://0.0.0.0:" + str(adapter_port) + "/listServices")
+            # print(resp)
+        else:
+            print("Invalid VIM name. Must be 'KUBERNETES', 'SWARM' or 'SSH'.")
+
+    # if slice_id == 'IoTService_sliced':
+    #     time.sleep(30)       # MUDAR PRA 30 NO FIM DA IMPLEMENTACAO (?)
+    parsed = json.loads(str(resp))
+    return json.dumps(parsed)
+
+
 # FUNCAO INCOMPLETA, FALTA REVISAO
-@app.route('/necos/ima/updateService', methods = ['POST']) 
+@app.route('/necos/ima/update_service', methods = ['POST']) 
 def update_service():
     # carrega o body do POST e "parseia" pra Json  
     data = yaml.safe_load(request.data.decode('utf-8'))
     json_content = json.dumps(data)
     json_content = json.loads(json_content)
 
-    adapter_port = adapter_dict[json_content['slice_id']][json_content['slice_part_id']]['port']
-    adapter_port = adapter_dict[json_content['slice_id']][json_content['slice_part_id']]['ssh_port']
-
     slice_id = json_content["slices"]["sliced"]["id"]
-
-    for slices_iterator in json_content["slices"]["sliced"]["id"]["dc-slice-part"]:
+    count = 0
+    for slices_iterator in json_content['slices']['sliced']['slice-parts']:
         
-        # if json_content['update'] == "replica":
-        #     resp = requests.post("http://0.0.0.0:" + str(adapter_port) + "/replicaScale", data = json.dumps(json_content['slices']['sliced'][slice_id]['slice-parts']['vdus']['commands']))
-        # elif json_content['update'] == "redeploy":  
-        #     requests.post("http://0.0.0.0:" + str(adapter_ssh_port) + "/deleteService", data = json.dumps(json_content['slices']['sliced'][slice_id]['slice-parts']))
-        #     resp = requests.post("http://0.0.0.0:" + str(adapter_ssh_port) + "/createService", data = json.dumps(json_content['slices']['sliced'][slice_id]['slice-parts']['vdus']['commands']))
-        # else: 
-        #     print('Error: The yaml sent has a invalid flag.')
-        # print('OK')
-        print(str(slices_iterator) + " " + str(slice_id))
+        adapter_port = adapter_dict[slice_id][str(slices_iterator['name'])]['port']
+        adapter_type = adapter_dict[slice_id][str(slices_iterator['name'])]['type']
 
-    resp = requests.post("http://0.0.0.0:" + str(adapter_port) + "/updateService", data = str(json_content))
+        if adapter_type == "KUBERNETES":
+            print("Updating the services:")
+            for service_it in slices_iterator['vdus']:
+                # print(" " + str(['service_info']['metadata']['name']))
+                # resp = requests.post("http://0.0.0.0:" + str(adapter_port) + "/updateService", data = str(json_content))
+                # print(resp)
+                print("in development...")
+                # count += 1
+        else:   # swarm
+            for service_it in slices_iterator['vdus']:
+                print("Updating the services: " + str(service_it['service_info']['Name']))
+                resp = requests.post("http://0.0.0.0:" + str(adapter_port) + "/deployService", data = json.dumps(service_it['service_info']))
+                print(resp)
+                code = ''.join(filter(str.isdigit, str(resp))) ## filtra os digitos de uma string
+                if int(code) == 200:
+                    count += 1
     return str(resp.status_code)
 
 if __name__ == '__main__':

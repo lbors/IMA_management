@@ -58,29 +58,24 @@ def deploy_service():
     json_content = json.loads(data)
 
     resp = requests.post("http://" + master_ip + ":" + str(master_port) + "/services/create", data = json.dumps(json_content))
-    r = json.loads(resp.content.decode('utf-8'))
-    # if r["status"] == "Failure":
-    #     try:
-    #         msg = "The service could not be initialized. Error " + str(r["code"]) + ": " + r["message"]
-    #     except Exception:
-    #         msg = "A nameless service could not be initialized. Error " + str(r["code"]) + ": " + r["message"]
-    # else:
-    #     msg = "The service initialized successfully."
-    return str(r)
+    parsed = json.loads(resp.content)
+    print(str(json.dumps(parsed, indent=2)))
+    return str(parsed)
 
 @app.route('/deleteService', methods = ['POST'])
-def deploy_service():
+def delete_service():
     data = request.data.decode('utf-8')
-    json_content = json.loads(data)
+    yaml_content = yaml.safe_load(data)
 
-    resp = requests.delete("http://" + master_ip + ":" + str(master_port) + "/services/" + json_content[['service-id']])
-    r = json.loads(resp.content.decode('utf-8'))
-
-    return str(r)
+    resp = requests.delete("http://" + master_ip + ":" + str(master_port) + "/services/" + yaml_content['service-id'])
+    # parsed = json.loads(resp.content)
+    # print(str(json.dumps(parsed, indent=2)))
+    # print(str(resp.content))
+    return '200'
 
 @app.route('/')
 def default_options():
-    return "Welcome to the Swarm's adapter of Resource and VM Management! This is in early stage."
+    return "Welcome to the Swarm's adapter of Resource and VM Management!"
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port='1010')
