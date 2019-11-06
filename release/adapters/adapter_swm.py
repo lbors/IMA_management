@@ -49,8 +49,9 @@ def inspect_swarm():
 @app.route('/listServices', methods = ['GET']) 
 def list_services():
     resp = requests.get("http://" + master_ip + ":" + str(master_port) + "/services")
-    parsed = json.loads(resp.content)
-    return str(json.dumps(parsed, indent=2))
+    # resp.json()
+    # parsed = json.loads(resp.content)
+    return str(json.dumps(resp.json(), indent=2))
 
 @app.route('/deployService', methods = ['POST'])
 def deploy_service():
@@ -58,9 +59,10 @@ def deploy_service():
     json_content = json.loads(data)
 
     resp = requests.post("http://" + master_ip + ":" + str(master_port) + "/services/create", data = json.dumps(json_content))
-    parsed = json.loads(resp.content)
-    print(str(json.dumps(parsed, indent=2)))
-    return str(parsed)
+    # parsed = json.loads(resp.content)
+    # print(str(json.dumps(parsed, indent=2)))
+    print(json.dumps(resp.json(), indent=2))
+    return (json.dumps(resp.json(), indent=2))
 
 @app.route('/deleteService', methods = ['POST'])
 def delete_service():
@@ -71,7 +73,19 @@ def delete_service():
     # parsed = json.loads(resp.content)
     # print(str(json.dumps(parsed, indent=2)))
     # print(str(resp.content))
-    return '200'
+    
+    return (json.dumps(resp.json(), indent=2))
+
+@app.route('/updateService', methods = ['POST'])
+def update_service():
+    data = request.data.decode('utf-8')
+    json_content = json.loads(data)
+
+    resp = requests.post("http://" + master_ip + ":" + str(master_port) + "/services/" + str(json_content['ID']) + "/update"
+                                + "?version=" + str(json_content['version']), data = json.dumps(json_content['service_info']))
+
+    print(json.dumps(resp.json(), indent=2))
+    return (json.dumps(resp.json(), indent=2))
 
 @app.route('/')
 def default_options():

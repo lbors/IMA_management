@@ -3,11 +3,11 @@ slices:
     id: IoTService_sliced
     slice-parts:
       - dc-slice-part:
-        name: dc-slice2
+        name: dc-slice3
         vdus:
           - vdu:
             name: k8s-master_2
-            namespace: dojot
+            namespace: necos
             VIM: KUBERNETES
             service_info:
               apiVersion: v1

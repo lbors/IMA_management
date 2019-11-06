@@ -107,18 +107,12 @@ def delete_pod():
 
 @app.route('/listServices', methods = ['POST']) 
 def list_services():
-    # ler arquivo de parametro
-    file_name = request.data.decode('utf-8')
-    file = open(file_name, "r")
-    yaml_content = file.read()
-    file.close()
-    data = yaml.safe_load(yaml_content) # parsear pra yaml
+    data = request.data.decode('utf-8')
+    yaml_content = yaml.safe_load(data)
 
     resp = requests.get("http://" + master_ip + ":" + str(master_port) + "/api/v1/namespaces/" + data['namespace'] + "/services/")
-    parsed = json.loads(resp.content)
-    print(json.dumps(parsed, indent=2))
-
-    return str(resp.status_code)
+    print(json.dumps(resp.json(), indent=1))
+    return (json.dumps(resp.json(), indent=2))
 
 @app.route('/createService', methods = ['POST'])
 def create_service():
