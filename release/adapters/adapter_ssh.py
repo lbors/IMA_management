@@ -31,8 +31,8 @@ def set_SSH():
 def default_options():
     return 'Welcome to the SSH adapter of Resource and VM Management'
 
-@app.route('/createService', methods = ['POST'])
-def create_service():
+@app.route('/deployService', methods = ['POST'])
+def deploy_service():
     global ssh_port, ssh_ip, ssh_user, ssh_pass, master_ip
     yaml_content = request.data.decode('utf-8')
 

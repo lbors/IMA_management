@@ -280,15 +280,15 @@ def deploy_service():
             if service_it['VIM'] == "SSH":
                 print("Executing the commands: ")
                 print(str(json.dumps(service_it['commands'], indent=2)))
-                requests.post("http://0.0.0.0:" + str(adapter_port) + "/createService", data = json.dumps(service_it['commands']))
+                requests.post("http://0.0.0.0:" + str(adapter_port) + "/deployService", data = json.dumps(service_it['commands']))
             elif service_it['VIM'] == "KUBERNETES":
                 # adapter_port = adapter_dict[json_content['slice_id']][service_it['slice_part_id']]['port']
                 print("Creating a K8s service...")
-                resp = requests.post("http://0.0.0.0:" + str(adapter_port) + "/createService", data = json.dumps(service_it))
+                resp = requests.post("http://0.0.0.0:" + str(adapter_port) + "/deployService", data = json.dumps(service_it))
                 print(json.dumps(resp.json(), indent=2))
             elif service_it['VIM'] == "SWARM":
                 print("Creating docker swarm service: " + str(service_it['service_info']['Name']))
-                resp = requests.post("http://0.0.0.0:" + str(adapter_port) + "/deployService", data = json.dumps(service_it['service_info']))
+                resp = requests.post("http://0.0.0.0:" + str(adapter_port) + "/deployService", data = json.dumps(service_it))
                 print(json.dumps(resp.json(), indent=2))
                 # se criar duas vezes ele faz um update
             else:
@@ -313,9 +313,9 @@ def delete_service():
         if adapter_type == "KUBERNETES":
             print("Deleting the services:")
             for service_it in slices_iterator['vdus']:
-                print(" " + str(['service_info']['metadata']['name']))
+                print(" " + str(service_it['service_info']['metadata']['name']))
                 resp = requests.post("http://0.0.0.0:" + str(adapter_port) + "/deleteService", data = json.dumps(service_it))
-                print(resp)
+                # print(resp)
                 count += 1
         else:   # swarm
             print("Deleting the services: " + str(slices_iterator['service-id']))
@@ -334,7 +334,7 @@ def get_service():
     json_content = json.loads(json_content)
 
     slice_id = json_content['slices']['sliced']['id']
-    resp = ""
+
     for slices_iterator in json_content['slices']['sliced']['slice-parts']:
         adapter_port = adapter_dict[slice_id][str(slices_iterator['name'])]['port']
         adapter_type = adapter_dict[slice_id][str(slices_iterator['name'])]['type']
@@ -374,11 +374,9 @@ def update_service():
         if adapter_type == "KUBERNETES":
             print("Updating the services:")
             for service_it in slices_iterator['vdus']:
-                # print(" " + str(['service_info']['metadata']['name']))
-                # resp = requests.post("http://0.0.0.0:" + str(adapter_port) + "/updateService", data = str(json_content))
-                # print(resp)
-                print("in development...")
-                # count += 1
+                print(" " + str(service_it['service_info']['metadata']['name']))
+                resp = requests.post("http://0.0.0.0:" + str(adapter_port) + "/updateService", data = json.dumps(service_it))
+                print(json.dumps(resp.json(), indent=2))
         else:   # swarm
             for service_it in slices_iterator['vdus']:
                 print("Updating the services: " + str(service_it['service_info']['Name']))

@@ -1,0 +1,25 @@
+Os comandos a seguir devem ser realizados na máquina master:
+
+$ sudo kubeadm init --pod-network-cidr=10.244.0.0/16 --apiserver-advertise-address <IP que voce deseja abrir>
+
+SALVE O OUTPUT, deve ser algo parecido com: 
+kubeadm join 192.168.50.2:6443 --token 9ydjm2.47n00jovz9kxcskq \
+    --discovery-token-ca-cert-hash sha256:8f2bb22fb09134bf14944acdfdf97de23c5449d8e13990fcf95f268026374b47
+
+Rode os outros comandos recomendados pela saída do kubeadm:
+
+$ mkdir -p $HOME/.kube
+$ sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+$ sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+Inicie a rede pod: 
+
+$ kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+
+
+
+Os comandos a seguir devem ser realizados em cada worker:
+
+Rode o output do comando kubeadm init que foi executado no master. 
+
+
