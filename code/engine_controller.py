@@ -12,8 +12,9 @@ from subprocess import call
 app = Flask(__name__)
 adapter_dict = {}
 
+# save and load file functions #################################################################
+
 def save_dict():
-    #filename = ""
     write_file = open("global_dict.json", 'w')
     json.dump(adapter_dict, write_file)
     write_file.close() 
@@ -37,8 +38,9 @@ def default_options():
 
 @app.route('/listAdapters', methods = ['GET'])
 def list_adapters():
-    # print(json.dumps(adapter_dict, indent=2))
     return str(json.dumps(adapter_dict, indent=2))
+
+# container functions ########################################################################
 
 def create_adapter(slice_id, slice_part_id, port, json_content):
     global adapter_dict
@@ -131,6 +133,37 @@ def delete_container(container_name):
     except:
         pass
 
+
+# management requests ########################################################################
+
+@app.route('/necos/ima/start_management', methods = ['POST'])
+def start_management():
+    json_content = json.dumps(yaml.safe_load(request.data.decode('utf-8')))
+    json_content = json.loads(json_content)
+    start_slice_adapterv2(json_content)
+    save_dict()
+
+    return str(json.dumps(adapter_dict, indent=2))
+
+@app.route('/necos/ima/stop_management', methods = ['POST'])
+def stop_management():
+    global adapter_dict
+    post_data = request.data.decode('utf-8') # input example: "Telefonica"
+    threads = []    
+
+    for slice_part in adapter_dict[post_data]:
+        if adapter_dict[post_data][slice_part]["adapter_ssh_name"] != "null":
+            t = threading.Thread(target=delete_container,args=(adapter_dict[post_data][slice_part]["adapter_ssh_name"],))
+            threads.append(t)
+            t.start()
+            
+    for t in threads:
+        t.join()
+
+    adapter_dict.pop(post_data)
+    save_dict()
+    return str('The slice ' + post_data + ' has been deleted.')
+
 @app.route('/necos/ima/update_management', methods = ['POST'])
 def update_management():
     global adapter_dict
@@ -158,35 +191,7 @@ def update_management():
     else:
         return "Error: The slice ID in the yaml doesn't exists."
 
-@app.route('/necos/ima/start_management', methods = ['POST'])
-def start_management():
-    json_content = json.dumps(yaml.safe_load(request.data.decode('utf-8')))
-    json_content = json.loads(json_content)
-    start_slice_adapterv2(json_content)
-    save_dict()
-
-    return str(json.dumps(adapter_dict, indent=2))
-
-@app.route('/necos/ima/stop_management', methods = ['POST'])
-def stop_management():
-    global adapter_dict
-    post_data = request.data.decode('utf-8') # exemplo de entrada: "Telefonica"
-    threads = []    
-
-    for slice_part in adapter_dict[post_data]:
-        if adapter_dict[post_data][slice_part]["adapter_ssh_name"] != "null":
-            t = threading.Thread(target=delete_container,args=(adapter_dict[post_data][slice_part]["adapter_ssh_name"],))
-            threads.append(t)
-            t.start()
-            
-    for t in threads:
-        t.join()
-
-    adapter_dict.pop(post_data)
-    save_dict()
-    return str('The slice ' + post_data + ' has been deleted.')
-
-# SERVICES ########################################################################
+# service requests ########################################################################
 
 @app.route('/necos/ima/deploy_service', methods = ['POST']) 
 def create_service():
@@ -213,47 +218,19 @@ def create_service():
 
 @app.route('/deleteService', methods = ['POST']) 
 def delete_service():
-    # carrega o body do POST e "parseia" pra Json  
+    # loads the POST body e parse it to Json  
     data = yaml.safe_load(request.data.decode('utf-8'))
     json_content = json.dumps(data)
     json_content = json.loads(json_content)
     services_status = []
 
     for service_it in json_content['slice_parts']:
-        # pra cada slice_part do yaml vai adicionar N servicos, mas em apenas UM namespace
+        # for each slice_part from yaml it adds N services, but only in one namespace
         adapter_port = adapter_dict[json_content['slice_id']][service_it['slice_part_id']]['port']
         resp = requests.post("http://0.0.0.0:" + str(adapter_port) + "/deleteService", data = json.dumps(service_it))
         parsed_resp = resp.content.decode('utf-8')
         services_status.append(parsed_resp)
     return ('\n'.join(services_status))
-
-# FUNCAO INCOMPLETA, FALTA REVISAO
-@app.route('/updateService', methods = ['POST']) 
-def update_service():
-    # carrega o body do POST e "parseia" pra Json  
-    data = yaml.safe_load(request.data.decode('utf-8'))
-    json_content = json.dumps(data)
-    json_content = json.loads(json_content)
-
-    adapter_port = adapter_dict[json_content['slice_id']][json_content['slice_part_id']]['port']
-    adapter_port = adapter_dict[json_content['slice_id']][json_content['slice_part_id']]['ssh_port']
-
-    slice_id = json_content["slices"]["sliced"]["id"]
-
-    for slices_iterator in json_content["slices"]["sliced"]["id"]["dc-slice-part"]:
-        
-        # if json_content['update'] == "replica":
-        #     resp = requests.post("http://0.0.0.0:" + str(adapter_port) + "/replicaScale", data = json.dumps(json_content['slices']['sliced'][slice_id]['slice-parts']['vdus']['commands']))
-        # elif json_content['update'] == "redeploy":  
-        #     requests.post("http://0.0.0.0:" + str(adapter_ssh_port) + "/deleteService", data = json.dumps(json_content['slices']['sliced'][slice_id]['slice-parts']))
-        #     resp = requests.post("http://0.0.0.0:" + str(adapter_ssh_port) + "/createService", data = json.dumps(json_content['slices']['sliced'][slice_id]['slice-parts']['vdus']['commands']))
-        # else: 
-        #     print('Error: The yaml sent has a invalid flag.')
-        # print('OK')
-        print(str(slices_iterator) + " " + str(slice_id))
-
-    resp = requests.post("http://0.0.0.0:" + str(adapter_port) + "/updateService", data = str(json_content))
-    return str(resp.status_code)
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port='5001')

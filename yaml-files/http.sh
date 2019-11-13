@@ -1,3 +1,11 @@
+#This file contains various examples of http requests using curl for testing purposes
+
+#Print a welcome string
+curl --request GET http://0.0.0.0:5001/
+
+#Print the dictionary of adapters
+curl --request GET http://0.0.0.0:5001/listAdapters
+
 #Start Dojot Slice
 
 curl -X POST http://localhost:5001/necos/ima/start_management --header "Content-type:application/yaml" \
