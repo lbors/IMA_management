@@ -127,7 +127,7 @@ def create_adapter(slice_id, slice_part_id, port, json_content):
                     slice_part_id: ({
                         "adapter_api_name":agent_name, 
                         "type": "KUBERNETES",
-                        "port":str(port)
+                        "port":str(port),
                         "api-ip": temp_ip,
                         "api-port": temp_port
                         })
