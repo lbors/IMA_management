@@ -99,7 +99,7 @@ def create_adapter(slice_id, slice_part_id, port, json_content):
         client = docker.from_env()
         client.containers.run("adapter_k8s:latest", detach=True, name=agent_name, ports={'1010/tcp': ('localhost', port)})
         temp_ip = str(json_content['dc-slice-part']['VIM']['vim-ref']['ip-api'])
-        temp_port = json_content['dc-slice-part']['VIM']['vim-ref']['port-api']
+        temp_port = str(json_content['dc-slice-part']['VIM']['vim-ref']['port-api'])
         master_data = temp_ip + ":" + str(temp_port)
 
         while True:
@@ -116,7 +116,9 @@ def create_adapter(slice_id, slice_part_id, port, json_content):
                         slice_part_id: ({
                             "adapter_api_name":agent_name, 
                             "type": "KUBERNETES",
-                            "port":str(port)
+                            "port": str(port),
+                            "api-ip": temp_ip,
+                            "api-port": temp_port
                         })
                 })
         else:
@@ -126,6 +128,8 @@ def create_adapter(slice_id, slice_part_id, port, json_content):
                         "adapter_api_name":agent_name, 
                         "type": "KUBERNETES",
                         "port":str(port)
+                        "api-ip": temp_ip,
+                        "api-port": temp_port
                         })
                     }
                 })
@@ -135,13 +139,12 @@ def create_adapter(slice_id, slice_part_id, port, json_content):
         client = docker.from_env()
         client.containers.run("adapter_swm:latest", detach=True, name=agent_name, ports={'1010/tcp': ('localhost', port)})
         temp_ip = str(json_content['dc-slice-part']['VIM']['vim-ref']['ip-api'])
-        temp_port = json_content['dc-slice-part']['VIM']['vim-ref']['port-api']
+        temp_port = str(json_content['dc-slice-part']['VIM']['vim-ref']['port-api'])
         initial_config = temp_ip + ":" + str(temp_port)
 
         while True:
             try:
                 requests.post("http://0.0.0.0:" + str(port) + "/setInitialConfig", data = initial_config)
-                # requests.post("http://0.0.0.0:" + "1010" + "/setInitialConfig", data = initial_config)
                 break
             except requests.exceptions.ConnectionError:
                 pass
@@ -153,7 +156,9 @@ def create_adapter(slice_id, slice_part_id, port, json_content):
                         slice_part_id: ({
                             "adapter_api_name":agent_name, 
                             "type": "SWARM",
-                            "port":str(port)
+                            "port":str(port),
+                            "api-ip": temp_ip,
+                            "api-port": temp_port
                         })
                 })
         else:
@@ -163,6 +168,8 @@ def create_adapter(slice_id, slice_part_id, port, json_content):
                         "adapter_api_name":agent_name, 
                         "type": "SWARM",
                         "port":str(port)
+                        "api-ip": temp_ip,
+                        "api-port": temp_port
                         })
                     }
                 })
