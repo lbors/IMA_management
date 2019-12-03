@@ -58,7 +58,7 @@ def deploy_service():
     data = request.data.decode('utf-8')
     json_content = json.loads(data)
 
-    resp = requests.post("http://" + master_ip + ":" + str(master_port) + "/services/create", data = json.dumps(json_content))
+    resp = requests.post("http://" + master_ip + ":" + str(master_port) + "/services/create", data = json.dumps(json_content['service_info']))
     # parsed = json.loads(resp.content)
     # print(str(json.dumps(parsed, indent=2)))
     print(json.dumps(resp.json(), indent=2))

@@ -26,16 +26,7 @@ def set_IP():
 def default_options():
     return "Welcome to the Kubernetes' adapter of Resource and VM Management"
 
-# slice_id, slice_part_id e namespace sao passados como argumentos
-# @app.route('/listPods', methods = ['POST']) 
-# def list_pods():
-#     post_data = request.data.decode('utf-8') # exemplo de data: "Telemarketing, slice-part-test-01, espaco-testes"
-#     post_data = post_data.split(', ')
 
-#     resp = requests.get("http://" + master_ip + ":" + str(master_port) + "/api/v1/namespaces/" + post_data[2] + "/pods/")
-#     parsed = json.loads(resp.content)
-#     print(json.dumps(parsed, indent=2))
-#     return (json.dumps(parsed, indent=2))
 
 # @app.route('/getPod', methods = ['POST'])
 # def get_pod():
@@ -54,31 +45,7 @@ def default_options():
 #     print(json.dumps(parsed, indent=2))
 #     return str(resp.status_code)
 
-# @app.route('/createPod', methods = ['POST'])
-# def create_pod():
-#     file_name = request.data.decode('utf-8')
-#     # print(file_name)
 
-#     # ler arquivo de parametro
-#     file = open(file_name, "r")
-#     yaml_content = file.read()
-#     file.close()
-
-#     # carrega o YAML, "parseia" pra Json 
-#     data = yaml.load(yaml_content)
-#     json_content = json.dumps(data)
-#     json_content = json.loads(json_content)
-    
-#     # curl -s http://{ip}:{porta}/api/v1/namespaces/{namespace}/pods \
-#     # -XPOST -H 'Content-Type: application/json' \
-#     # -d@{arquivo}.json 
-
-#     for pod_id in json_content['pod_info']:
-#         resp = requests.post("http://" + master_ip + ":" + str(master_port) + "/api/v1/namespaces/" + pod_id['metadata']['namespace'] 
-#                             + "/pods/", data = json.dumps(pod_id))
-#         print(str(resp.status_code) + "\n")
-
-#     return 'OK'
 
 
 
@@ -121,8 +88,36 @@ def default_options():
 
 #     resp = requests.patch("http://" + master_ip + ":" + str(master_port) + "/api/v1/namespaces/" + yaml_content['namespace'] 
 #                         + "/services/" + str(yaml_content['service_info']['metadata']['name']), data = json.dumps(yaml_content['service_info']))
-
 #     return (json.dumps(resp.json(), indent=1))
+
+#     return 'OK'
+# @app.route('/getService', methods = ['POST'])
+# def get_service():
+#     file_name = request.data.decode('utf-8')
+#     print(file_name)
+
+#     # ler arquivo de parametro
+#     file = open(file_name, "r")
+#     yaml_content = file.read()
+#     file.close()
+#     data = yaml.load(yaml_content)
+
+#     resp = requests.get("http://" + master_ip + ":" + str(master_port) + "/api/v1/namespaces/" + data['namespace'] + "/services/" + data['name'])
+
+#     parsed = json.loads(resp.content)
+#     print(json.dumps(parsed, indent=2))
+#     return str(resp.status_code)
+
+# slice_id, slice_part_id e namespace sao passados como argumentos
+# @app.route('/listPods', methods = ['POST']) 
+# def list_pods():
+#     post_data = request.data.decode('utf-8') # exemplo de data: "Telemarketing, slice-part-test-01, espaco-testes"
+#     post_data = post_data.split(', ')
+
+#     resp = requests.get("http://" + master_ip + ":" + str(master_port) + "/api/v1/namespaces/" + post_data[2] + "/pods/")
+#     parsed = json.loads(resp.content)
+#     print(json.dumps(parsed, indent=2))
+#     return (json.dumps(parsed, indent=2))
 
 # @app.route('/deletePod', methods = ['POST']) 
 # def delete_pod():
@@ -146,30 +141,39 @@ def default_options():
 #                             + "/pods/" + pod_id['metadata']['name'])
 #         print(str(resp.status_code) + "\n")
 
-#     return 'OK'
-# @app.route('/getService', methods = ['POST'])
-# def get_service():
+# @app.route('/createPod', methods = ['POST'])
+# def create_pod():
 #     file_name = request.data.decode('utf-8')
-#     print(file_name)
+#     # print(file_name)
 
 #     # ler arquivo de parametro
 #     file = open(file_name, "r")
 #     yaml_content = file.read()
 #     file.close()
+
+#     # carrega o YAML, "parseia" pra Json 
 #     data = yaml.load(yaml_content)
+#     json_content = json.dumps(data)
+#     json_content = json.loads(json_content)
+    
+#     # curl -s http://{ip}:{porta}/api/v1/namespaces/{namespace}/pods \
+#     # -XPOST -H 'Content-Type: application/json' \
+#     # -d@{arquivo}.json 
 
-#     resp = requests.get("http://" + master_ip + ":" + str(master_port) + "/api/v1/namespaces/" + data['namespace'] + "/services/" + data['name'])
+#     for pod_id in json_content['pod_info']:
+#         resp = requests.post("http://" + master_ip + ":" + str(master_port) + "/api/v1/namespaces/" + pod_id['metadata']['namespace'] 
+#                             + "/pods/", data = json.dumps(pod_id))
+#         print(str(resp.status_code) + "\n")
 
-#     parsed = json.loads(resp.content)
-#     print(json.dumps(parsed, indent=2))
-#     return str(resp.status_code)
+#     return 'OK'
+
 
 @app.route('/listServices', methods = ['POST']) 
 def list_services():
     data = request.data.decode('utf-8')
     yaml_content = yaml.safe_load(data)
-    # GET /apis/apps/v1/namespaces/{namespace}/deployments
-    req_str = str("/apis/apps/v1/namespaces/%s/deployments" % (yaml_content['namespace']))
+    # GET /apis/apps/v1/namespaces/{namespace}/pods
+    req_str = str("/apis/apps/v1/namespaces/%s/pods" % (yaml_content['namespace']))
     print("http://" + master_ip + ":" + str(master_port) + req_str)   
     resp = requests.get("http://" + master_ip + ":" + str(master_port) + req_str)
     return (json.dumps(resp.json(), indent=2))
@@ -178,8 +182,8 @@ def list_services():
 def deploy_service():
     data = request.data.decode('utf-8')
     yaml_content = yaml.safe_load(data)
-    #  POST /apis/apps/v1/namespaces/{namespace}/deployments
-    req_str = str("/apis/apps/v1/namespaces/%s/deployments" % (yaml_content['namespace']))
+    #  POST /apis/apps/v1/namespaces/{namespace}/pods
+    req_str = str("/apis/apps/v1/namespaces/%s/pods" % (yaml_content['namespace']))
     print("http://" + master_ip + ":" + str(master_port) + req_str)   
     resp = requests.post("http://" + master_ip + ":" + str(master_port) + req_str, data = json.dumps(yaml_content['service_info']))
     return (json.dumps(resp.json(), indent=2))
@@ -188,8 +192,8 @@ def deploy_service():
 def delete_service():
     data = request.data.decode('utf-8')
     yaml_content = yaml.safe_load(data)
-    #  DELETE /apis/apps/v1/namespaces/{namespace}/deployments/{name}
-    req_str = str("/apis/apps/v1/namespaces/%s/deployments/%s" % (yaml_content['namespace'], yaml_content['service_info']['metadata']['name']))
+    #  DELETE /apis/apps/v1/namespaces/{namespace}/pods/{name}
+    req_str = str("/apis/apps/v1/namespaces/%s/pods/%s" % (yaml_content['namespace'], yaml_content['service_info']['metadata']['name']))
     print("http://" + master_ip + ":" + str(master_port) + req_str)   
     resp = requests.delete("http://" + master_ip + ":" + str(master_port) + req_str)
     return (json.dumps(resp.json(), indent=2))
@@ -199,8 +203,8 @@ def update_service():
     data = request.data.decode('utf-8')
     yaml_content = yaml.safe_load(data)
     json_content = json.loads(data)
-    #  PATCH /apis/apps/v1/namespaces/{namespace}/deployments/{name}
-    req_str = str("/apis/apps/v1/namespaces/%s/deployments/%s" % (yaml_content['namespace'], yaml_content['service_info']['metadata']['name']))
+    #  PATCH /apis/apps/v1/namespaces/{namespace}/pods/{name}
+    req_str = str("/apis/apps/v1/namespaces/%s/pods/%s" % (yaml_content['namespace'], yaml_content['service_info']['metadata']['name']))
     print("http://" + master_ip + ":" + str(master_port) + req_str)   
     head = {"Content-Type": "application/strategic-merge-patch+json"}
     print(json.dumps(json_content['service_info']))
@@ -211,8 +215,8 @@ def update_service():
 # def update_scale():
 #     data = request.data.decode('utf-8')
 #     yaml_content = yaml.safe_load(data)
-#     #  PATCH /apis/apps/v1/namespaces/{namespace}/deployments/{name}/scale
-#     req_str = str("/apis/apps/v1/namespaces/%s/deployments/%s/scale" % (yaml_content['namespace'], yaml_content['service_info']['metadata']['name']))
+#     #  PATCH /apis/apps/v1/namespaces/{namespace}/pods/{name}/scale
+#     req_str = str("/apis/apps/v1/namespaces/%s/pods/%s/scale" % (yaml_content['namespace'], yaml_content['service_info']['metadata']['name']))
 #     print("http://" + master_ip + ":" + str(master_port) + req_str)   
 #     resp = requests.patch("http://" + master_ip + ":" + str(master_port) + req_str, data = json.dumps(yaml_content['service_info']))
 #     return (json.dumps(resp.json(), indent=2))

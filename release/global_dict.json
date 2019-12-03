@@ -1,9 +1,1 @@
-{
-    "IoTService_sliced": {
-        "dc-slice3": {
-            "adapter_api_name": "dc-slice3_adapter_k8s",
-            "type": "KUBERNETES",
-            "port": "1010"
-        }
-    }
-}
+{"IoTService_sliced": {"dc-slice3": {"adapter_api_name": "dc-slice3_adapter_swm", "type": "SWARM", "port": "36879"}}}
