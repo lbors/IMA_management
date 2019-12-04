@@ -296,6 +296,7 @@ def deploy_service():
             elif service_it['VIM'] == "SWARM":
                 print("Creating docker swarm service: " + str(service_it['service_info']['Name']))
                 resp = requests.post("http://0.0.0.0:" + str(adapter_port) + "/deployService", data = json.dumps(service_it))
+                # resp = requests.post("http://0.0.0.0:" + "1010" + "/deployService", data = json.dumps(service_it))
                 print(json.dumps(resp.json(), indent=2))
                 # se criar duas vezes ele faz um update
             else:
