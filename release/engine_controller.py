@@ -73,7 +73,7 @@ def create_adapter(slice_id, slice_part_id, port, json_content):
                             "adapter_ssh_name": agent_name,
                             "type": "SSH",
                             'ssh_ip': str(ssh_ip),
-                            'ssh_port': str(ssh_port),
+                            'ssh_port': str(ssh_port)
                             # 'ssh_user': str(ssh_user),
                             # 'ssh_pass': str(ssh_pass),
                             # 'master_ip': str(master_ip)
@@ -87,7 +87,7 @@ def create_adapter(slice_id, slice_part_id, port, json_content):
                         'adapter_ssh_name': agent_name,
                         "type": "SSH",
                         'ssh_ip': str(ssh_ip),
-                        'ssh_port': str(ssh_port),
+                        'ssh_port': str(ssh_port)
                         # 'ssh_user': str(ssh_user),
                         # 'ssh_pass': str(ssh_pass),
                         # 'master_ip': str(master_ip)
@@ -167,7 +167,7 @@ def create_adapter(slice_id, slice_part_id, port, json_content):
                     slice_part_id: ({
                         "adapter_api_name":agent_name, 
                         "type": "SWARM",
-                        "port":str(port)
+                        "port":str(port),
                         "api-ip": temp_ip,
                         "api-port": temp_port
                         })
