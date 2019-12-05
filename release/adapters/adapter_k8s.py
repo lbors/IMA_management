@@ -181,14 +181,13 @@ def list_services():
 @app.route('/deployService', methods = ['POST'])
 def deploy_service():
     data = request.data.decode('utf-8')
-    #yaml_content = yaml.safe_load(data)
-    json_content = json.loads(data)
+    yaml_content = yaml.load(data)
     #  POST /apis/apps/v1/namespaces/{namespace}/pods
-    req_str = str("/api/v1/namespaces/%s/pods" % (json_content['namespace']))
+    req_str = str("/api/v1/namespaces/%s/pods" % (yaml_content['namespace']))
     print("http://" + master_ip + ":" + str(master_port) + req_str)   
-    #resp = requests.post("http://" + master_ip + ":" + str(master_port) + req_str, data = json.dumps(json_content['service_info']))
-    resp = requests.post("http://" + master_ip + ":" + str(master_port) + req_str, data = json_content['service_info'])
-    print(json_content['service_info'])
+    resp = requests.post("http://" + master_ip + ":" + str(master_port) + req_str, data = json.dumps(yaml_content['service_info']))
+    #resp = requests.post("http://" + master_ip + ":" + str(master_port) + req_str, data = json_content['service_info'])
+    print(yaml_content['service_info'])
     return (json.dumps(resp.json(), indent=2))
 
 @app.route('/deleteService', methods = ['POST'])
