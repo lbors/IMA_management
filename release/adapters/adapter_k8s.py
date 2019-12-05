@@ -186,7 +186,8 @@ def deploy_service():
     #  POST /apis/apps/v1/namespaces/{namespace}/pods
     req_str = str("/api/v1/namespaces/%s/pods" % (json_content['namespace']))
     print("http://" + master_ip + ":" + str(master_port) + req_str)   
-    resp = requests.post("http://" + master_ip + ":" + str(master_port) + req_str, data = json.dumps(json_content['service_info']))
+    #resp = requests.post("http://" + master_ip + ":" + str(master_port) + req_str, data = json.dumps(json_content['service_info']))
+    resp = requests.post("http://" + master_ip + ":" + str(master_port) + req_str, data = json_content['service_info'])
     print(json_content['service_info'])
     return (json.dumps(resp.json(), indent=2))
 
