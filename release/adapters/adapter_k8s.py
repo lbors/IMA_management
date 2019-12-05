@@ -173,7 +173,7 @@ def list_services():
     data = request.data.decode('utf-8')
     yaml_content = yaml.safe_load(data)
     # GET /apis/apps/v1/namespaces/{namespace}/pods
-    req_str = str("/apis/apps/v1/namespaces/%s/pods" % (yaml_content['namespace']))
+    req_str = str("/api/v1/namespaces/%s/pods" % (yaml_content['namespace']))
     print("http://" + master_ip + ":" + str(master_port) + req_str)   
     resp = requests.get("http://" + master_ip + ":" + str(master_port) + req_str)
     return (json.dumps(resp.json(), indent=2))
@@ -183,7 +183,7 @@ def deploy_service():
     data = request.data.decode('utf-8')
     yaml_content = yaml.safe_load(data)
     #  POST /apis/apps/v1/namespaces/{namespace}/pods
-    req_str = str("/apis/apps/v1/namespaces/%s/pods" % (yaml_content['namespace']))
+    req_str = str("/api/v1/namespaces/%s/pods" % (yaml_content['namespace']))
     print("http://" + master_ip + ":" + str(master_port) + req_str)   
     resp = requests.post("http://" + master_ip + ":" + str(master_port) + req_str, data = json.dumps(yaml_content['service_info']))
     return (json.dumps(resp.json(), indent=2))
@@ -193,7 +193,7 @@ def delete_service():
     data = request.data.decode('utf-8')
     yaml_content = yaml.safe_load(data)
     #  DELETE /apis/apps/v1/namespaces/{namespace}/pods/{name}
-    req_str = str("/apis/apps/v1/namespaces/%s/pods/%s" % (yaml_content['namespace'], yaml_content['service_info']['metadata']['name']))
+    req_str = str("/api/v1/namespaces/%s/pods/%s" % (yaml_content['namespace'], yaml_content['service_info']['metadata']['name']))
     print("http://" + master_ip + ":" + str(master_port) + req_str)   
     resp = requests.delete("http://" + master_ip + ":" + str(master_port) + req_str)
     return (json.dumps(resp.json(), indent=2))
