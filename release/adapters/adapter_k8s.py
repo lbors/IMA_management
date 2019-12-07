@@ -195,7 +195,7 @@ def deploy_service():
     #resp = requests.post("http://" + master_ip + ":" + str(master_port) + req_str, data = json_content['service_info'])
     #log.close()
     #print(yaml_content['service_info'])
-    return (json.dumps(resp.json(), indent=2))
+    return resp.status_code
 
 @app.route('/deleteService', methods = ['POST'])
 def delete_service():
