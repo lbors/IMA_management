@@ -180,7 +180,6 @@ def list_services():
 
 @app.route('/deployService', methods = ['POST'])
 def deploy_service():
-    def deploy_service():
     data = request.data.decode('utf-8')
     log = open("log.txt", "a")
     #yaml_content = yaml.load(data)
