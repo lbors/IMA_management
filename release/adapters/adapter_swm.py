@@ -74,7 +74,7 @@ def delete_service():
     # print(str(json.dumps(parsed, indent=2)))
     # print(str(resp.content))
     
-    return (json.dumps(resp.json(), indent=2))
+    return resp.status_code
 
 @app.route('/updateService', methods = ['POST'])
 def update_service():
