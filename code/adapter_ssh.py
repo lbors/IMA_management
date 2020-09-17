@@ -8,11 +8,18 @@ import paramiko
 import time
 
 app = Flask(__name__)
+"""
 ssh_port = 22
 ssh_ip = '200.133.239.3X'
 ssh_user = 'necos'
 ssh_pass = 'necos'
 master_ip = '200.18.102.6X'
+"""
+ssh_port = 22
+ssh_ip = '10.126.1.187'
+ssh_user = 'necos'
+ssh_pass = 'gercom'
+master_ip = '10.126.1.32'
 
 @app.route('/setSSH', methods = ['POST'])
 def set_SSH():
