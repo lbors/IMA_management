@@ -16,8 +16,8 @@ ssh_pass = 'necos'
 master_ip = '200.18.102.6X'
 """
 ssh_port = 22
-ssh_ip = '10.126.1.187'
-ssh_user = 'necos'
+ssh_ip = '10.126.1.32'
+ssh_user = 'gercom'
 ssh_pass = 'gercom'
 master_ip = '10.126.1.32'
 
